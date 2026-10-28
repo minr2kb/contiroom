@@ -4,7 +4,7 @@ export type PadKey = (typeof MUSIC_KEYS)[number];
 
 const CACHE_PREFIX = 'contiroom-pads-';
 // Bump this when the bundled audio files change so an old recording is not reused.
-const CACHE_NAME = `${CACHE_PREFIX}v1`;
+const CACHE_NAME = `${CACHE_PREFIX}v2`;
 
 export const normalizePadKey = (value: string): PadKey | null => {
   const pitch = keyPitch(value);
@@ -17,7 +17,7 @@ const openCache = () => caches.open(CACHE_NAME);
 
 export const listDownloadedPads = async (): Promise<PadKey[]> => {
   const cache = await openCache();
-  const results = await Promise.all(MUSIC_KEYS.map(async (key) => (await cache.match(padUrl(key))) ? key : null));
+  const results = await Promise.all(MUSIC_KEYS.map(async (key) => ((await cache.match(padUrl(key))) ? key : null)));
   return results.filter((key): key is PadKey => key !== null);
 };
 
@@ -35,7 +35,9 @@ export const deleteDownloadedPad = async (key: PadKey): Promise<void> => {
 
 export const removeOutdatedPadCaches = async (): Promise<void> => {
   const names = await caches.keys();
-  await Promise.all(names.filter((name) => name.startsWith(CACHE_PREFIX) && name !== CACHE_NAME).map((name) => caches.delete(name)));
+  await Promise.all(
+    names.filter((name) => name.startsWith(CACHE_PREFIX) && name !== CACHE_NAME).map((name) => caches.delete(name)),
+  );
 };
 
 export const downloadPad = async (

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { PadAudio } from '../features/pads/pad-audio.ts';
+import {PadAudio} from '@/features/pads/pad-provider';
 
 class FakeParam {
   value = 0;
@@ -24,6 +24,25 @@ class FakeGain {
   connect() {
     return this;
   }
+  disconnect() {}
+}
+
+class FakeSource {
+  buffer: AudioBuffer | null = null;
+  loop = false;
+  startArgs: [number, number] | null = null;
+  stopAt: number | null = null;
+  onended: (() => void) | null = null;
+  connect(gain: FakeGain) {
+    return gain;
+  }
+  start(when: number, offset: number) {
+    this.startArgs = [when, offset];
+  }
+  stop(when = 0) {
+    this.stopAt = when;
+  }
+  disconnect() {}
 }
 
 class FakeAudioContext {
@@ -31,6 +50,7 @@ class FakeAudioContext {
   currentTime = 0;
   destination = {};
   gains: FakeGain[] = [];
+  sources: FakeSource[] = [];
   constructor() {
     FakeAudioContext.instances.push(this);
   }
@@ -39,70 +59,54 @@ class FakeAudioContext {
     this.gains.push(gain);
     return gain;
   }
-  createMediaElementSource() {
-    return { connect: (gain: FakeGain) => gain };
+  createBufferSource() {
+    const source = new FakeSource();
+    this.sources.push(source);
+    return source;
+  }
+  async decodeAudioData() {
+    return { duration: 60 } as AudioBuffer;
   }
   async resume() {}
   async close() {}
 }
 
-class FakeAudio {
-  static instances: FakeAudio[] = [];
-  currentTime = 0;
-  loop = false;
-  preload = '';
-  paused = true;
-  src = '';
-  ontimeupdate: (() => void) | null = null;
-  constructor() {
-    FakeAudio.instances.push(this);
-  }
-  async play() {
-    this.paused = false;
-  }
-  pause() {
-    this.paused = true;
-  }
-  removeAttribute(name: string) {
-    if (name === 'src') this.src = '';
-  }
-  load() {}
-}
-
-test('pad switches skip recorded intro, follow the outgoing timeline, and preserve the louder channel', async () => {
-  const originalAudio = globalThis.Audio;
+test('pad loops continuously and crossfades key changes at the outgoing position', async () => {
   const originalContext = globalThis.AudioContext;
-  globalThis.Audio = FakeAudio as unknown as typeof Audio;
   globalThis.AudioContext = FakeAudioContext as unknown as typeof AudioContext;
   const audio = new PadAudio(0.25, 2);
   try {
-    const [first, second] = FakeAudio.instances;
-    const [, firstGain, secondGain] = FakeAudioContext.instances[0].gains;
+    const context = FakeAudioContext.instances.at(-1);
+    assert.ok(context);
     const blob = new Blob(['pad']);
 
     await audio.play('G', blob);
-    assert.equal(first.currentTime, 8);
+    const first = context.sources[0];
+    assert.equal(first.loop, true);
+    assert.deepEqual(first.startArgs, [0, 0]);
+    assert.equal(context.gains[1].gain.ramps.at(-1), 1);
 
-    first.currentTime = 120;
+    context.currentTime = 12;
     await audio.play('D', blob);
-    assert.equal(second.currentTime, 120);
-    const outgoingMid = firstGain.gain.ramps.slice(-32)[15];
-    const incomingMid = secondGain.gain.ramps.slice(-32)[15];
+    const second = context.sources[1];
+    assert.equal(second.loop, true);
+    assert.deepEqual(second.startArgs, [12, 12]);
+    const outgoingMid = context.gains[1].gain.ramps.slice(-32)[15];
+    const incomingMid = context.gains[2].gain.ramps.slice(-32)[15];
     assert.ok(Math.abs(outgoingMid ** 2 + incomingMid ** 2 - 1) < 0.01);
+    assert.equal(first.stopAt, 14);
+    assert.ok(first.onended);
 
-    first.currentTime = 122;
-    firstGain.gain.value = 0.9;
-    secondGain.gain.value = 0.2;
+    context.currentTime = 13;
     await audio.play('E', blob);
-    assert.equal(second.currentTime, 122);
-    assert.equal(first.paused, false);
+    assert.deepEqual(context.sources[2].startArgs, [13, 13]);
+    assert.equal(first.stopAt, 14);
 
-    second.currentTime = 930;
-    second.ontimeupdate?.();
-    assert.equal(second.currentTime, 8);
+    audio.stop();
+    assert.equal(context.gains[3].gain.ramps.at(-1), 0);
+    assert.equal(context.sources[2].stopAt, 15);
   } finally {
     audio.dispose();
-    globalThis.Audio = originalAudio;
     globalThis.AudioContext = originalContext;
   }
 });

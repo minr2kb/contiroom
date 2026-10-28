@@ -7,5 +7,4 @@ next-env.d.ts
 .omc
 .vercel
 .DS_Store
-public/pads/*.mp3
-public/pad-loop-demo/*.mp3
+.pad-originals/

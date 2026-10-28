@@ -2,8 +2,10 @@
 
 import { BottomSheet } from '@astryxdesign/core/BottomSheet';
 import { Button } from '@astryxdesign/core/Button';
+import { Card } from '@astryxdesign/core/Card';
 import { Drawer } from '@astryxdesign/core/Drawer';
 import { HStack } from '@astryxdesign/core/HStack';
+import { IconButton } from '@astryxdesign/core/IconButton';
 import { List, ListItem } from '@astryxdesign/core/List';
 import { NumberInput } from '@astryxdesign/core/NumberInput';
 import { Slider } from '@astryxdesign/core/Slider';
@@ -59,9 +61,15 @@ const DownloadProgress = ({ padKey, value, onCancel }: { padKey: PadKey; value: 
           {percent}%
         </span>
       </span>
-      <button
-        type="button"
-        aria-label={`${padKey} 패드 다운로드 취소 (터치에서는 두 번 탭)`}
+      <IconButton
+        label={`${padKey} 패드 다운로드 취소 (터치에서는 두 번 탭)`}
+        icon={
+          <X
+            aria-hidden="true"
+            className={`h-4 w-4 ${confirmCancel ? '' : 'opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100'}`}
+          />
+        }
+        variant="ghost"
         onBlur={() => setConfirmCancel(false)}
         onClick={() => {
           if (window.matchMedia('(hover: none)').matches && !confirmCancel) {
@@ -70,13 +78,9 @@ const DownloadProgress = ({ padKey, value, onCancel }: { padKey: PadKey; value: 
           }
           onCancel();
         }}
-        className="absolute inset-0 flex items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-purple-400"
-      >
-        <X
-          aria-hidden="true"
-          className={`h-4 w-4 ${confirmCancel ? '' : 'opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100'}`}
-        />
-      </button>
+        className="absolute inset-0 rounded-full focus-visible:outline-2 focus-visible:outline-purple-400"
+        style={{ width: '100%', height: '100%' }}
+      />
     </span>
   );
 };
@@ -118,10 +122,10 @@ const PadControls = ({
           <h2 className="text-xl font-semibold">유틸리티</h2>
           <Text color="secondary">워십 패드</Text>
         </div>
-        <Button label="닫기" icon={<X aria-hidden="true" />} isIconOnly variant="ghost" onClick={close} />
+        <IconButton label="닫기" icon={<X aria-hidden="true" />} variant="ghost" onClick={close} />
       </div>
 
-      <div className="rounded-xl border border-neutral-700 bg-neutral-900 p-4">
+      <Card padding={4}>
         <Text color="secondary">현재 키</Text>
 
         <HStack align="center" gap={2} justify="between">
@@ -129,11 +133,10 @@ const PadControls = ({
 
           <div>
             {padKey && pads.status[padKey] !== 'ready' && pads.status[padKey] !== 'downloading' && !pads.playing && (
-              <Button
+              <IconButton
                 label="다운로드"
                 tooltip="다운로드"
                 icon={<Download aria-hidden="true" />}
-                isIconOnly
                 variant="ghost"
                 onClick={() => void pads.download(padKey).catch(() => undefined)}
               />
@@ -146,9 +149,8 @@ const PadControls = ({
               />
             )}
             {padKey && pads.status[padKey] === 'ready' && (!pads.playing || pads.activeKey !== padKey) && (
-              <Button
+              <IconButton
                 label={'재생'}
-                isIconOnly
                 icon={<Play aria-hidden="true" />}
                 variant="ghost"
                 onClick={() => {
@@ -158,13 +160,7 @@ const PadControls = ({
               />
             )}
             {pads.playing && (
-              <Button
-                label="재생 종료"
-                icon={<Square aria-hidden="true" />}
-                isIconOnly
-                variant="ghost"
-                onClick={pads.stop}
-              />
+              <IconButton label="재생 종료" icon={<Square aria-hidden="true" />} variant="ghost" onClick={pads.stop} />
             )}
           </div>
         </HStack>
@@ -179,7 +175,7 @@ const PadControls = ({
             width="100%"
           />
         </div>
-      </div>
+      </Card>
 
       <div className="grid grid-cols-[1fr_112px] items-end gap-3">
         <Switch
@@ -210,11 +206,10 @@ const PadControls = ({
             이 콘티에서 필요한 패드 {neededCount}/{neededKeys.size}개 다운로드됨
           </Text>
           {neededCount < neededKeys.size && (
-            <Button
+            <IconButton
               label="콘티 키 일괄 다운로드"
               tooltip="콘티 키 일괄 다운로드"
               icon={<Download aria-hidden="true" />}
-              isIconOnly
               size="sm"
               variant="ghost"
               isDisabled={bulkDownloading}
@@ -226,7 +221,7 @@ const PadControls = ({
       <div>
         <div className="mb-3 flex items-center justify-between gap-3">
           <h3 className="font-semibold">키별 패드</h3>
-          <Text color="secondary">{downloadedCount}/12개 · 키당 약 36MB</Text>
+          <Text color="secondary">{downloadedCount}/12개 · 키당 약 1.2MB</Text>
         </div>
         <List density="compact" hasDividers aria-label="키별 패드" className="rounded-xl border border-neutral-800">
           {MUSIC_KEYS.map((key) => {
@@ -240,17 +235,16 @@ const PadControls = ({
                     {neededKeys.has(key) && <span className="ml-2 text-xs font-normal text-purple-300">콘티 사용</span>}
                   </span>
                 }
-                description={status === 'ready' ? '다운로드됨' : status === 'downloading' ? '다운로드 중' : '약 36MB'}
+                description={status === 'ready' ? '다운로드됨' : status === 'downloading' ? '다운로드 중' : '약 1.2MB'}
                 onClick={() => selectKey(key)}
                 isSelected={padKey === key}
                 endContent={
                   <span className="inline-flex shrink-0 items-center gap-1">
                     {status === 'ready' ? (
-                      <Button
+                      <IconButton
                         label={`${key} 패드 삭제`}
                         tooltip="패드 삭제"
                         icon={<Trash2 aria-hidden="true" />}
-                        isIconOnly
                         size="sm"
                         variant="ghost"
                         onClick={() => void pads.deleteDownload(key).catch(() => undefined)}
@@ -262,11 +256,10 @@ const PadControls = ({
                         onCancel={() => pads.cancelDownload(key)}
                       />
                     ) : (
-                      <Button
+                      <IconButton
                         label={`${key} 다운로드`}
                         tooltip="다운로드"
                         icon={<Download aria-hidden="true" />}
-                        isIconOnly
                         variant="ghost"
                         size="sm"
                         onClick={() => void pads.download(key).catch(() => undefined)}
@@ -459,9 +452,9 @@ export const PadUtilityPanel = () => {
             {pads.playing && (
               <span className="pointer-events-none absolute -inset-1 animate-pulse rounded-full border border-violet-300/30" />
             )}
-            <button
-              type="button"
-              aria-label={`${miniKey ?? '패드'} ${pads.playing ? '재생 종료' : fadingOut ? '페이드아웃 중, 다시 재생' : '재생'}`}
+            <Button
+              label={`${miniKey ?? '패드'} ${pads.playing ? '재생 종료' : fadingOut ? '페이드아웃 중, 다시 재생' : '재생'}`}
+              variant="ghost"
               aria-pressed={pads.playing}
               onPointerDown={(event) => {
                 touchOpening.current = event.pointerType === 'touch' && !miniExpanded;
@@ -475,9 +468,22 @@ export const PadUtilityPanel = () => {
                 toggleMiniPlayback();
               }}
               className={`relative z-10 flex size-12 items-center justify-center rounded-full border text-sm font-semibold shadow-lg backdrop-blur-sm transition-colors focus-visible:outline-2 focus-visible:outline-violet-300 ${pads.playing ? 'border-violet-300/50 bg-violet-950/50 text-violet-100 hover:bg-violet-900' : fadingOut ? 'border-violet-300/35 bg-violet-950/60 text-violet-200/80 hover:bg-violet-900/70' : 'border-white/30 bg-neutral-900/70 text-neutral-200 hover:bg-neutral-800'}`}
+              style={{
+                width: 48,
+                height: 48,
+                padding: 0,
+                borderRadius: '50%',
+                border: `1px solid ${pads.playing ? 'rgb(196 181 253 / .5)' : fadingOut ? 'rgb(196 181 253 / .35)' : 'rgb(255 255 255 / .3)'}`,
+                backgroundColor: pads.playing
+                  ? 'rgb(46 16 101 / .5)'
+                  : fadingOut
+                    ? 'rgb(46 16 101 / .6)'
+                    : 'rgb(23 23 23 / .7)',
+                color: pads.playing ? '#ede9fe' : fadingOut ? 'rgb(221 214 254 / .8)' : '#e5e5e5',
+              }}
             >
               {miniKey ?? '♪'}
-            </button>
+            </Button>
           </span>
           <div
             inert={!miniExpanded}
@@ -485,35 +491,48 @@ export const PadUtilityPanel = () => {
             className={`absolute right-0 bottom-full w-44 origin-bottom-right pb-2 transition-[opacity,transform] duration-200 ease-out ${miniExpanded ? 'translate-y-0 scale-100 opacity-100' : 'pointer-events-none translate-y-2 scale-95 opacity-0'}`}
           >
             <div className="max-h-[calc(100dvh-11rem)] overflow-y-auto rounded-2xl border border-white/15 bg-neutral-900/95 p-2 text-white shadow-xl backdrop-blur-md">
-              <button
-                type="button"
-                title={currentKey ? `자동 (${currentKey} key)` : '연주할 키가 없습니다'}
-                disabled={!currentKey}
+              <Button
+                label={`자동${currentKey ? ` (${currentKey} key)` : ''}`}
+                variant="ghost"
+                width="100%"
+                tooltip={currentKey ? `자동 (${currentKey} key)` : '연주할 키가 없습니다'}
+                isDisabled={!currentKey}
                 aria-pressed={pads.mode === 'auto'}
                 onClick={() => playMode('auto')}
                 className={`mb-1 h-9 w-full rounded-lg px-2 text-left text-sm transition-colors disabled:opacity-35 ${pads.mode === 'auto' ? 'bg-purple-400/25 text-purple-100' : 'text-neutral-300 hover:bg-white/10'}`}
-              >
-                자동{currentKey ? ` (${currentKey} key)` : ''}
-              </button>
+                style={{
+                  height: 36,
+                  justifyContent: 'flex-start',
+                  borderRadius: 8,
+                  backgroundColor: pads.mode === 'auto' ? 'rgb(192 132 252 / .25)' : undefined,
+                  color: pads.mode === 'auto' ? '#f3e8ff' : '#d4d4d4',
+                }}
+              />
               <div className="grid grid-cols-2 gap-1">
                 {MUSIC_KEYS.map((key) => (
-                  <button
+                  <Button
                     key={key}
-                    type="button"
-                    aria-label={`${key} key`}
+                    label={`${key} key`}
+                    variant="ghost"
+                    width="100%"
                     aria-pressed={pads.mode === key}
                     onClick={() => playMode(key)}
-                    className={`h-8 rounded-lg text-sm transition-colors ${pads.mode === key ? 'bg-purple-400/25 text-purple-100' : 'text-neutral-300 hover:bg-white/10'}`}
+                    className={`h-11 rounded-lg text-sm transition-colors ${pads.mode === key ? 'bg-purple-400/25 text-purple-100' : 'text-neutral-300 hover:bg-white/10'}`}
+                    style={{
+                      height: 44,
+                      borderRadius: 8,
+                      backgroundColor: pads.mode === key ? 'rgb(192 132 252 / .25)' : undefined,
+                      color: pads.mode === key ? '#f3e8ff' : '#d4d4d4',
+                    }}
                   >
                     {key}
-                  </button>
+                  </Button>
                 ))}
               </div>
               <div className="mt-2 flex justify-end gap-1 border-t border-white/10 pt-1">
-                <Button
+                <IconButton
                   label="유틸리티 열기"
                   icon={<SlidersHorizontal aria-hidden="true" />}
-                  isIconOnly
                   variant="ghost"
                   size="sm"
                   onClick={() => {
@@ -521,10 +540,9 @@ export const PadUtilityPanel = () => {
                     setOpen(true);
                   }}
                 />
-                <Button
+                <IconButton
                   label="미니 플레이어 닫기"
                   icon={<X aria-hidden="true" />}
-                  isIconOnly
                   variant="ghost"
                   size="sm"
                   onClick={closeMini}

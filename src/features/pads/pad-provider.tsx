@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { MUSIC_KEYS } from '@/lib/music';
-import { PadAudio } from './pad-audio';
 import {
   deleteDownloadedPad,
   downloadPad,
@@ -13,6 +12,9 @@ import {
   type PadKey,
   removeOutdatedPadCaches,
 } from './pad-storage';
+import { LoopAudioPlayer } from '@/lib/loop-audio-player';
+
+export class PadAudio extends LoopAudioPlayer<PadKey> {}
 
 type PadStatus = 'idle' | 'downloading' | 'ready';
 type PadState = Record<PadKey, PadStatus>;
@@ -42,7 +44,7 @@ type PadContextValue = {
   setFadeSeconds: (seconds: number) => void;
 };
 
-const PadContext = createContext<PadContextValue | null>(null);
+export const PadContext = createContext<PadContextValue | null>(null);
 const initialStatus = Object.fromEntries(MUSIC_KEYS.map((key) => [key, 'idle'])) as PadState;
 
 export const PadProvider = ({ children }: { children: React.ReactNode }) => {
