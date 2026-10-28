@@ -29,10 +29,10 @@ export const updateSession = async (request: NextRequest) => {
   const isLogin = pathname === '/login';
   const isOnboarding = pathname === '/onboarding';
   const requiresLogin = /^\/(?:songs|contis)\/[^/]+\/edit(?:\/|$)/.test(pathname);
-  const redirectTo = (destination: string) => {
+  const redirectTo = (destination: string, search = '') => {
     const url = request.nextUrl.clone();
     url.pathname = destination;
-    url.search = '';
+    url.search = search;
     const redirect = NextResponse.redirect(url);
     response.cookies.getAll().forEach((cookie) => {
       redirect.cookies.set(cookie);
@@ -40,18 +40,32 @@ export const updateSession = async (request: NextRequest) => {
     return redirect;
   };
 
-  if (!userId && (requiresLogin || isOnboarding)) return redirectTo('/login');
+  if (!userId && (requiresLogin || isOnboarding || isLogin)) {
+    const search = new URLSearchParams({ login: '1' });
+    if (requiresLogin) search.set('next', `${pathname}${request.nextUrl.search}`);
+    return redirectTo('/', search.toString());
+  }
 
   // API requests need JSON errors, and the auth callback must finish its token
   // exchange before profile navigation is checked.
-  if (userId && !pathname.startsWith('/api/') && !pathname.startsWith('/auth/') && !pathname.split('/').at(-1)?.includes('.')) {
+  if (
+    userId &&
+    !pathname.startsWith('/api/') &&
+    !pathname.startsWith('/auth/') &&
+    !pathname.split('/').at(-1)?.includes('.')
+  ) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id')
       .eq('id', userId)
       .maybeSingle();
     if (!profileError) {
-      if (!profile && !isOnboarding) return redirectTo('/onboarding');
+      if (!profile && !isOnboarding) {
+        return redirectTo(
+          '/onboarding',
+          new URLSearchParams({ next: `${pathname}${request.nextUrl.search}` }).toString(),
+        );
+      }
       if (profile && (isOnboarding || isLogin)) return redirectTo('/');
     }
   }

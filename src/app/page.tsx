@@ -13,6 +13,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bookmark, BookmarkCheck, Copy } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { type MouseEvent, Suspense, useEffect, useState } from 'react';
+import { useAuthDialog } from '@/components/auth-dialog';
 import { PageHeader } from '@/components/page-header';
 import { QueryBoundary } from '@/components/query-boundary';
 import { PageContent, Shell } from '@/components/shell';
@@ -28,6 +29,7 @@ const ExploreList = () => {
   const showToast = useToast();
   const queryClient = useQueryClient();
   const userId = useCurrentUserId();
+  const openLogin = useAuthDialog();
   const songsQuery = useQuery({ ...queries.listSongs(), throwOnError: true });
   const savedQuery = useSavedSongs(Boolean(userId));
   const actions = useSavedSongActions();
@@ -47,7 +49,7 @@ const ExploreList = () => {
   if (songs.length === 0) return <EmptyState title="아직 공개된 곡이 없습니다" />;
 
   const save = async (songId: string, isSaved: boolean) => {
-    if (!userId) return router.push('/login');
+    if (!userId) return openLogin();
     setPending(songId);
     try {
       if (isSaved) await actions.remove(songId);
@@ -61,7 +63,7 @@ const ExploreList = () => {
   };
 
   const duplicate = async (songId: string) => {
-    if (!userId) return router.push('/login');
+    if (!userId) return openLogin();
     setPending(songId);
     try {
       const copy = await actions.duplicate(songId);

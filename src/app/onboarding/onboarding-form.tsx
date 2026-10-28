@@ -2,7 +2,8 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useState, type FormEvent } from 'react';
+import { type FormEvent, useState } from 'react';
+import { authReturnPath } from '@/lib/auth-return-path';
 import { createClient } from '@/lib/supabase/client';
 
 const handlePattern = /^[a-z0-9_]{1,30}$/;
@@ -34,7 +35,7 @@ export const OnboardingForm = () => {
         return;
       }
       queryClient.clear();
-      router.replace('/');
+      router.replace(authReturnPath(new URLSearchParams(window.location.search).get('next')));
       router.refresh();
     } catch {
       setMessage('연결을 확인한 뒤 다시 시도해 주세요.');
@@ -53,13 +54,15 @@ export const OnboardingForm = () => {
       return;
     }
     queryClient.clear();
-    router.replace('/login');
+    router.replace('/?login=1');
     router.refresh();
   };
 
   return (
     <form onSubmit={submit} className="mt-8 space-y-5">
-      <label htmlFor="handle" className="block text-sm font-medium text-neutral-200">내 핸들</label>
+      <label htmlFor="handle" className="block text-sm font-medium text-neutral-200">
+        내 핸들
+      </label>
       <div className="flex overflow-hidden rounded-lg border border-neutral-700 bg-neutral-900 focus-within:border-[#DF87FF]">
         <span className="px-4 py-3 text-neutral-400">@</span>
         <input
@@ -79,11 +82,24 @@ export const OnboardingForm = () => {
         />
       </div>
       <p className="text-xs text-neutral-500">핸들은 등록 후 변경할 수 없습니다.</p>
-      {message && <p role="alert" className="text-sm text-red-300">{message}</p>}
-      <button type="submit" disabled={pending} className="w-full rounded-lg bg-[#DF87FF] px-5 py-3 font-semibold text-black disabled:opacity-50">
+      {message && (
+        <p role="alert" className="text-sm text-red-300">
+          {message}
+        </p>
+      )}
+      <button
+        type="submit"
+        disabled={pending}
+        className="w-full rounded-lg bg-[#DF87FF] px-5 py-3 font-semibold text-black disabled:opacity-50"
+      >
         {pending ? '저장 중...' : '시작하기'}
       </button>
-      <button type="button" onClick={signOut} disabled={pending} className="w-full text-sm text-neutral-400 hover:text-white disabled:opacity-50">
+      <button
+        type="button"
+        onClick={signOut}
+        disabled={pending}
+        className="w-full text-sm text-neutral-400 hover:text-white disabled:opacity-50"
+      >
         다른 계정으로 로그인
       </button>
     </form>

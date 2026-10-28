@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { MouseEvent } from 'react';
 import { Suspense, useEffect, useState } from 'react';
+import { useAuthDialog } from '@/components/auth-dialog';
 import { PageHeader } from '@/components/page-header';
 import { QueryBoundary } from '@/components/query-boundary';
 import { PageContent, Shell } from '@/components/shell';
@@ -31,6 +32,7 @@ type ListQuery = ReturnType<typeof useSongListQuery>;
 
 const SongsList = ({ userId, listQuery }: { userId: string | null; listQuery: ListQuery }) => {
   const router = useRouter();
+  const openLogin = useAuthDialog();
   const songsQuery = useQuery({ ...queries.listSongs(), throwOnError: true });
   const songs = (songsQuery.data ?? []).filter((song) => song.ownerId === userId);
   const filteredSongs = selectSongs(songs, listQuery.filters);
@@ -57,7 +59,7 @@ const SongsList = ({ userId, listQuery }: { userId: string | null; listQuery: Li
 
   if (songs.length === 0) {
     return (
-      <VStack paddingBlock={10} align="center" className="border-y border-neutral-800">
+      <VStack paddingBlock={10} align="center">
         <EmptyState
           title="아직 등록된 곡이 없습니다."
           headingLevel={2}
@@ -65,7 +67,7 @@ const SongsList = ({ userId, listQuery }: { userId: string | null; listQuery: Li
             userId ? (
               <SongAddMenu label="새 곡" />
             ) : (
-              <Button label="로그인" icon={<LogIn aria-hidden="true" />} href="/login" />
+              <Button label="로그인" icon={<LogIn aria-hidden="true" />} onClick={openLogin} />
             )
           }
         />
@@ -150,6 +152,7 @@ const SongsList = ({ userId, listQuery }: { userId: string | null; listQuery: Li
 };
 
 const SavedSongsList = ({ userId, listQuery }: { userId: string | null; listQuery: ListQuery }) => {
+  const openLogin = useAuthDialog();
   const showToast = useToast();
   const songsQuery = useQuery(queries.listSongs());
   const songs = songsQuery.data ?? [];
@@ -190,7 +193,7 @@ const SavedSongsList = ({ userId, listQuery }: { userId: string | null; listQuer
     return (
       <EmptyState
         title="로그인하면 공개 곡을 저장할 수 있습니다"
-        actions={<Button label="로그인" icon={<LogIn aria-hidden="true" />} href="/login" />}
+        actions={<Button label="로그인" icon={<LogIn aria-hidden="true" />} onClick={openLogin} />}
       />
     );
   if (savedQuery.isPending || songsQuery.isPending)

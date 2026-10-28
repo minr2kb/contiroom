@@ -53,7 +53,7 @@ const ContiItems = ({ contiId }: { contiId: string }) => {
 
   if (conti.items.length === 0) {
     return (
-      <VStack paddingBlock={10} align="center" className="border-y border-neutral-800">
+      <VStack paddingBlock={10} align="center">
         <EmptyState
           title="아직 곡이 없습니다"
           description={userId === conti.ownerId ? '수정을 눌러 곡을 추가하세요.' : undefined}
@@ -74,7 +74,7 @@ const ContiItems = ({ contiId }: { contiId: string }) => {
 
   return (
     <List density="spacious" hasDividers aria-label="콘티 곡 순서">
-      {conti.items.map((entry, index) => {
+      {conti.items.map((entry, index: number) => {
         const song = songs.find((candidate) => candidate.id === entry.songId);
         const songKey = entry.key || song?.baseKey;
         const bpm = entry.bpm ?? song?.bpm;

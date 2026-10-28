@@ -34,7 +34,7 @@ Node.js 22 이상과 pnpm이 필요합니다.
    pnpm dev
    ```
 
-앱의 로그인 화면에는 회원가입 기능이 없습니다. 테스트할 계정은 Supabase Auth에서 준비하세요. 실제 `.env.local`은 Git에서 제외됩니다.
+로그인은 Google 계정을 사용합니다. Supabase Auth에서 Google 공급자를 켜고, URL Configuration의 Redirect URLs에 앱의 `/auth/callback` 주소를 쿼리 문자열까지 허용하도록 등록하세요. 실제 `.env.local`은 Git에서 제외됩니다.
 악보 사진을 분석할 때 업로드한 이미지는 앱 서버를 거쳐 OpenAI API로 전송됩니다.
 
 ## 공개 범위와 데이터

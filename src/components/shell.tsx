@@ -7,15 +7,16 @@ import { VStack } from '@astryxdesign/core/VStack';
 import { useQueryClient } from '@tanstack/react-query';
 import { Compass, Library, ListMusic, LogOut } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useAuthDialog } from '@/components/auth-dialog';
 import { createClient } from '@/lib/supabase/client';
 
 export const Shell = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const openLogin = useAuthDialog();
   const [supabase] = useState(createClient);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [profileHandle, setProfileHandle] = useState<string | null>(null);
@@ -141,9 +142,9 @@ export const Shell = ({ children }: { children: React.ReactNode }) => {
                   ]}
                 />
               ) : (
-                <Link href="/login" className="text-sm text-neutral-400 hover:text-white">
+                <button type="button" onClick={openLogin} className="text-sm text-neutral-400 hover:text-white">
                   로그인
-                </Link>
+                </button>
               )}
             </HStack>
           }

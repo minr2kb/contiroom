@@ -9,24 +9,33 @@ import { Spinner } from '@astryxdesign/core/Spinner';
 import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, Globe, LockKeyhole, Plus } from 'lucide-react';
+import { ArrowRight, Globe, LockKeyhole, LogIn, Plus } from 'lucide-react';
+import { useAuthDialog } from '@/components/auth-dialog';
 import { PageHeader } from '@/components/page-header';
 import { QueryBoundary } from '@/components/query-boundary';
 import { PageContent, Shell } from '@/components/shell';
 import { queries } from '@/lib/data-api';
 import { useCurrentUserId } from '@/lib/use-current-user-id';
 
-const ContisList = ({ canCreate }: { canCreate: boolean }) => {
-  const contisQuery = useQuery({ ...queries.listContis(), throwOnError: true });
-  const contis = contisQuery.data ?? [];
+const ContisList = ({ userId }: { userId: string | null }) => {
+  const openLogin = useAuthDialog();
+  const contisQuery = useQuery({ ...queries.listContis(), enabled: Boolean(userId), throwOnError: true });
+  const contis = (contisQuery.data ?? []).filter((conti) => conti.ownerId === userId);
+  if (!userId)
+    return (
+      <EmptyState
+        title="로그인이 필요합니다"
+        actions={<Button label="로그인" icon={<LogIn aria-hidden="true" />} onClick={openLogin} />}
+      />
+    );
   if (contisQuery.isPending) return <Spinner label="콘티 목록을 불러오는 중…" />;
   if (contis.length === 0) {
     return (
-      <VStack paddingBlock={10} align="center" className="border-y border-neutral-800">
+      <VStack paddingBlock={10} align="center">
         <EmptyState
           title="아직 등록된 콘티가 없습니다"
           actions={
-            canCreate ? (
+            userId ? (
               <Button label="새 콘티" variant="primary" icon={<Plus aria-hidden="true" />} href="/contis/new/edit" />
             ) : undefined
           }
@@ -87,7 +96,7 @@ const ContisPage = () => {
         />
         <VStack as="section" aria-label="콘티 목록">
           <QueryBoundary loadingLabel="콘티 목록을 불러오는 중…" errorTitle="콘티 목록을 불러오지 못했습니다">
-            <ContisList canCreate={Boolean(userId)} />
+            <ContisList userId={userId} />
           </QueryBoundary>
         </VStack>
       </PageContent>
