@@ -8,3 +8,4 @@ next-env.d.ts
 .vercel
 .DS_Store
 public/pads/*.mp3
+public/pad-loop-demo/*.mp3
