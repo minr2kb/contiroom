@@ -1,0 +1,10 @@
+node_modules/
+.next/
+.env*
+!.env.example
+*.tsbuildinfo
+next-env.d.ts
+.omc
+.vercel
+.DS_Store
+public/pads/*.mp3

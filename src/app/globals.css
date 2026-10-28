@@ -1,0 +1,46 @@
+@layer reset, theme, base, astryx-base, astryx-theme, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "@astryxdesign/core/reset.css";
+@import "@astryxdesign/core/astryx.css";
+@import "@astryxdesign/theme-neutral/theme.css";
+@import "@astryxdesign/core/tailwind-theme.css";
+@import "tailwindcss/utilities.css" layer(utilities);
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (max-width: 1023px) {
+  .song-editor-layout:has([data-mobile-open="true"]) {
+    padding-bottom: min(80dvh, 680px);
+  }
+
+  .song-editor-layout [id^="song-lyric-line-"] {
+    scroll-margin-bottom: min(80dvh, 680px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+@layer utilities {
+  [data-astryx-theme="neutral"] {
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-family-body: var(--font-suite), sans-serif;
+    --font-family-heading: var(--font-suite), sans-serif;
+    --font-family-code: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --text-heading-1-weight: 700;
+    --text-heading-2-weight: 700;
+    --text-heading-3-weight: 700;
+    --text-heading-4-weight: 700;
+    --text-heading-5-weight: 700;
+    --text-heading-6-weight: 700;
+  }
+}
