@@ -17,7 +17,11 @@ export const LiveIntroDialog = ({ isOpen, onOpenChange, hideForDay, onHideForDay
   <Dialog isOpen={isOpen} onOpenChange={onOpenChange} purpose="info" width={520}>
     <DialogHeader title="라이브 화면 사용 안내" onOpenChange={onOpenChange} />
     <VStack gap={4} className="pt-5">
-      <Text>화면 왼쪽/오른쪽 절반을 클릭하거나 ←/→ 키로 슬라이드를 넘깁니다. Cmd/Ctrl+←/→ 키로 섹션을 이동합니다.</Text>
+      <Text>화면 왼쪽/오른쪽 절반을 클릭하거나 ←/→ 키로 슬라이드를 넘깁니다. Cmd/Ctrl+방향키로 곡을 이동합니다.</Text>
+      <Text>
+        스페이스바로 휴식 화면을 표시하거나 숨길 수 있습니다. 화면을 클릭해도 숨겨집니다. 이미지를 지정하지 않으면
+        콘티룸 로고가 표시됩니다.
+      </Text>
       <Text>
         F 키로 전체화면을 켜거나 끄고, Esc 키로 전체화면을 종료합니다. 오른쪽 위에서 표시 내용을 조정할 수 있습니다.
       </Text>

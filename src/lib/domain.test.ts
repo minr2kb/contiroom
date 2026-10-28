@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { contiSchema } from './data-router.ts';
-import { flattenConti, moveCursor, movePageCursor, visibleLines } from './live.ts';
+import { flattenConti, moveCursor, movePageCursor, moveSongCursor, visibleLines } from './live.ts';
 import { sampleContis, sampleSongs } from './model.ts';
 import { keyPitch, makeChord, parseChord, transposeChord } from './music.ts';
 
@@ -40,6 +40,10 @@ test('independent arrangements, transpose, and live navigation', () => {
   assert.equal(moveCursor(lines, repeatStart - 1, 1, true), repeatStart);
   assert.equal(moveCursor(lines, nextSong - 1, 1), nextSong);
   assert.equal(moveCursor(lines, nextSong, -1, true), repeatStart);
+  assert.equal(moveSongCursor(lines, 1, 1), nextSong);
+  assert.equal(moveSongCursor(lines, nextSong, -1), 0);
+  assert.equal(moveSongCursor(lines, 2, -1), 0);
+  assert.equal(moveSongCursor(lines, lines.length - 1, 1), lines.length - 1);
   assert.equal(moveCursor(lines, lines.length - 1, 1), lines.length - 1);
 });
 

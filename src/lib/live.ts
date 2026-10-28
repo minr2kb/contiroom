@@ -66,6 +66,18 @@ export const moveCursor = (lines: LiveLine[], cursor: number, direction: -1 | 1,
   return lines.findIndex((line) => line.formId === lines[first - 1].formId);
 };
 
+export const moveSongCursor = (lines: LiveLine[], cursor: number, direction: -1 | 1): number => {
+  if (!lines.length) return 0;
+  const current = clamp(cursor, 0, lines.length - 1);
+  const first = lines.findIndex((line) => line.itemId === lines[current].itemId);
+  if (direction === 1) {
+    const next = lines.findIndex((line, index) => index > current && line.itemId !== lines[current].itemId);
+    return next < 0 ? current : next;
+  }
+  if (first === 0) return 0;
+  return lines.findIndex((line) => line.itemId === lines[first - 1].itemId);
+};
+
 export const movePageCursor = (lines: LiveLine[], cursor: number, direction: -1 | 1, count: 1 | 2 | 3): number => {
   if (!lines.length) return 0;
   const current = clamp(cursor, 0, lines.length - 1);

@@ -6,9 +6,10 @@ import { HStack } from '@astryxdesign/core/HStack';
 import { Link } from '@astryxdesign/core/Link';
 import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
-import { ArrowLeft, Maximize, Minimize, Settings2, SlidersHorizontal } from 'lucide-react';
+import { ArrowLeft, Maximize, Minimize, Settings2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { LiveIntroDialog } from '@/components/live-intro-dialog';
 import { LiveOptionsDialog } from '@/components/live-options-dialog';
 import { LiveFormNavigation, LiveStageBody, LiveStageStatus } from '@/components/live-stage-sections';
@@ -23,12 +24,10 @@ const LiveStageHeader = ({
   title,
   fullscreen,
   openSettings,
-  openUtility,
 }: {
   title: string;
   fullscreen: Stage['overlays']['fullscreen'];
   openSettings: () => void;
-  openUtility: () => void;
 }) => (
   <HStack
     as="header"
@@ -52,14 +51,6 @@ const LiveStageHeader = ({
       </Heading>
     </HStack>
     <HStack align="center" gap={2}>
-      <Button
-        label="유틸리티"
-        isIconOnly
-        icon={<SlidersHorizontal aria-hidden="true" className="h-4 w-4" />}
-        variant="secondary"
-        size="sm"
-        onClick={openUtility}
-      />
       {fullscreen.error && <Text role="alert">전체화면을 열 수 없습니다.</Text>}
       <Button
         label={fullscreen.isActive ? '전체화면 종료 (F)' : '전체화면 (F)'}
@@ -90,12 +81,20 @@ const LiveStageHeader = ({
 const LivePage = () => {
   const { id: contiId } = useParams<{ id: string }>();
   const stage = useLiveStage(contiId);
-  const { display, navigation, overlays } = stage;
+  const { display, navigation, overlays, pause } = stage;
   const pads = usePads();
   const utility = useUtility();
   const currentKey = display.view === 'ready' ? normalizePadKey(display.current?.key ?? '') : null;
   const currentItemId = display.view === 'ready' ? (display.current?.itemId ?? null) : null;
   const lastItem = useRef<string | null>(null);
+  const pauseButton = useRef<HTMLButtonElement>(null);
+  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
+
+  useEffect(() => setPortalRoot(document.body), []);
+
+  useEffect(() => {
+    if (pause.isActive) pauseButton.current?.focus();
+  }, [pause.isActive]);
 
   useEffect(() => {
     utility.setContext({
@@ -122,12 +121,11 @@ const LivePage = () => {
   }, [display.view, currentItemId, currentKey, pads.playing, pads.mode, pads.status, pads.play, pads.stop]);
 
   return (
-    <VStack as="main" minHeight="100dvh" className="bg-black text-white">
+    <VStack as="main" inert={pause.isBlocking} minHeight="100dvh" className="bg-black text-white">
       <LiveStageHeader
         title={display.active.title}
         fullscreen={overlays.fullscreen}
         openSettings={() => overlays.settings.setOpen(true)}
-        openUtility={() => utility.setOpen(true)}
       />
       <LiveStageBody
         view={display.view}
@@ -162,11 +160,36 @@ const LivePage = () => {
           />
         </VStack>
       )}
+      {portalRoot &&
+        createPortal(
+          <button
+            ref={pauseButton}
+            type="button"
+            aria-label="휴식 화면 닫기"
+            aria-hidden={!pause.isActive}
+            tabIndex={pause.isActive ? 0 : -1}
+            className={`fixed inset-0 z-40 flex h-dvh w-screen cursor-pointer items-center justify-center bg-black outline-none transition-opacity duration-500 ${pause.isActive ? 'opacity-100' : 'opacity-0'} ${pause.isBlocking ? '' : 'pointer-events-none'}`}
+            onClick={(event) => {
+              pause.dismiss();
+              event.currentTarget.blur();
+            }}
+          >
+            {pause.imageUrl ? (
+              <img src={pause.imageUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <img src="/contiroom-logo.svg" alt="콘티룸" className="w-[min(50vw,360px)]" />
+            )}
+          </button>,
+          portalRoot,
+        )}
       <LiveOptionsDialog
         isOpen={overlays.settings.isOpen}
         onOpenChange={overlays.settings.setOpen}
         options={display.active.options}
         onChange={stage.changeOptions}
+        pauseImageUrl={pause.imageUrl}
+        pauseImageError={pause.error}
+        onPauseImageChange={(file) => void pause.changeImage(file)}
       />
       <LiveIntroDialog
         isOpen={overlays.hint.isOpen}
