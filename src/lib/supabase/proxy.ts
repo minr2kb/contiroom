@@ -28,6 +28,7 @@ export const updateSession = async (request: NextRequest) => {
   const pathname = request.nextUrl.pathname;
   const isLogin = pathname === '/login';
   const isOnboarding = pathname === '/onboarding';
+  const showingOnboarding = pathname === '/' && request.nextUrl.searchParams.has('onboarding');
   const requiresLogin = /^\/(?:songs|contis)\/[^/]+\/edit(?:\/|$)/.test(pathname);
   const redirectTo = (destination: string, search = '') => {
     const url = request.nextUrl.clone();
@@ -40,9 +41,12 @@ export const updateSession = async (request: NextRequest) => {
     return redirect;
   };
 
-  if (!userId && (requiresLogin || isOnboarding || isLogin)) {
+  if (!userId && (requiresLogin || isOnboarding || isLogin || showingOnboarding)) {
     const search = new URLSearchParams({ login: '1' });
     if (requiresLogin) search.set('next', `${pathname}${request.nextUrl.search}`);
+    if (showingOnboarding && request.nextUrl.searchParams.has('next')) {
+      search.set('next', request.nextUrl.searchParams.get('next') ?? '/');
+    }
     return redirectTo('/', search.toString());
   }
 
@@ -60,13 +64,16 @@ export const updateSession = async (request: NextRequest) => {
       .eq('id', userId)
       .maybeSingle();
     if (!profileError) {
-      if (!profile && !isOnboarding) {
+      if (!profile && !showingOnboarding) {
         return redirectTo(
-          '/onboarding',
-          new URLSearchParams({ next: `${pathname}${request.nextUrl.search}` }).toString(),
+          '/',
+          new URLSearchParams({
+            onboarding: '1',
+            next: isOnboarding ? '/' : `${pathname}${request.nextUrl.search}`,
+          }).toString(),
         );
       }
-      if (profile && (isOnboarding || isLogin)) return redirectTo('/');
+      if (profile && (isOnboarding || isLogin || showingOnboarding)) return redirectTo('/');
     }
   }
 

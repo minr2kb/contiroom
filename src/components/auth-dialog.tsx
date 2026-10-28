@@ -1,14 +1,15 @@
 'use client';
 
-import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { createContext, type Dispatch, type SetStateAction, Suspense, useContext, useEffect, useState } from 'react';
-import { authReturnPath } from '@/lib/auth-return-path';
-import { createClient } from '@/lib/supabase/client';
-import { Layout, LayoutContent } from '@astryxdesign/core/Layout';
 import { Button } from '@astryxdesign/core/Button';
+import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
+import { Layout, LayoutContent } from '@astryxdesign/core/Layout';
 import { Text } from '@astryxdesign/core/Text';
 import Image from 'next/image';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { createContext, type Dispatch, type SetStateAction, Suspense, useContext, useEffect, useState } from 'react';
+import { OnboardingForm } from '@/components/onboarding-form';
+import { authReturnPath } from '@/lib/auth-return-path';
+import { createClient } from '@/lib/supabase/client';
 
 const AuthDialogContext = createContext<() => void>(() => {});
 
@@ -17,17 +18,22 @@ export const useAuthDialog = () => useContext(AuthDialogContext);
 const AuthQueryOpener = ({
   setOpen,
   setMessage,
+  setOnboarding,
 }: {
   setOpen: Dispatch<SetStateAction<boolean>>;
   setMessage: Dispatch<SetStateAction<string>>;
+  setOnboarding: Dispatch<SetStateAction<boolean>>;
 }) => {
-  const login = useSearchParams().get('login');
+  const searchParams = useSearchParams();
+  const login = searchParams.get('login');
+  const onboarding = searchParams.has('onboarding');
   useEffect(() => {
     if (login) {
       setOpen(true);
       if (login === 'error') setMessage('Google 로그인을 완료하지 못했습니다. 다시 시도해 주세요.');
     }
-  }, [login, setOpen, setMessage]);
+    setOnboarding(onboarding);
+  }, [login, onboarding, setOpen, setMessage, setOnboarding]);
   return null;
 };
 
@@ -36,6 +42,7 @@ export const AuthDialogProvider = ({ children }: { children: React.ReactNode }) 
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState('');
+  const [onboarding, setOnboarding] = useState(false);
 
   const close = () => {
     setOpen(false);
@@ -74,7 +81,7 @@ export const AuthDialogProvider = ({ children }: { children: React.ReactNode }) 
     <AuthDialogContext.Provider value={() => setOpen(true)}>
       {children}
       <Suspense fallback={null}>
-        <AuthQueryOpener setOpen={setOpen} setMessage={setMessage} />
+        <AuthQueryOpener setOpen={setOpen} setMessage={setMessage} setOnboarding={setOnboarding} />
       </Suspense>
       <Dialog isOpen={open} onOpenChange={(isOpen) => !isOpen && close()} purpose="form" width={420}>
         <Layout
@@ -91,6 +98,16 @@ export const AuthDialogProvider = ({ children }: { children: React.ReactNode }) 
                 variant="primary"
               />
               {message && <Text type="supporting">{message}</Text>}
+            </LayoutContent>
+          }
+        />
+      </Dialog>
+      <Dialog isOpen={onboarding} onOpenChange={() => {}} purpose="form" width={420}>
+        <Layout
+          header={<DialogHeader title="핸들 만들기" subtitle="곡과 콘티에 표시될 이름이에요." />}
+          content={
+            <LayoutContent>
+              <OnboardingForm />
             </LayoutContent>
           }
         />

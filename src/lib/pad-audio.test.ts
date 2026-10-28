@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {PadAudio} from '@/features/pads/pad-provider';
+import { LoopAudioPlayer as PadAudio } from './loop-audio-player.ts';
 
 class FakeParam {
   value = 0;
