@@ -9,8 +9,8 @@ import { Spinner } from '@astryxdesign/core/Spinner';
 import { Text } from '@astryxdesign/core/Text';
 import { useToast } from '@astryxdesign/core/Toast';
 import { VStack } from '@astryxdesign/core/VStack';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Bookmark, BookmarkCheck, Copy } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { type MouseEvent, Suspense, useEffect, useState } from 'react';
 import { useAuthDialog } from '@/components/auth-dialog';
@@ -27,7 +27,6 @@ const ExploreList = () => {
   const { filters, title, setTitle, page, setFilter, setPage, songHref } = useSongListQuery();
   const router = useRouter();
   const showToast = useToast();
-  const queryClient = useQueryClient();
   const userId = useCurrentUserId();
   const openLogin = useAuthDialog();
   const songsQuery = useQuery({ ...queries.listSongs(), throwOnError: true });
@@ -62,47 +61,19 @@ const ExploreList = () => {
     }
   };
 
-  const duplicate = async (songId: string) => {
-    if (!userId) return openLogin();
-    setPending(songId);
-    try {
-      const copy = await actions.duplicate(songId);
-      await queryClient.invalidateQueries({ queryKey: queries.listSongs.queryKey() });
-      showToast({ body: '곡을 복제했습니다.' });
-      router.push(`/songs/${copy.id}/edit`);
-    } catch {
-      showToast({ body: '곡을 복제하지 못했습니다. 다시 시도하세요.', type: 'error' });
-      setPending(null);
-    }
-  };
-
   const songActions = (song: (typeof songs)[number]) => (
-    <HStack gap={2} align="center">
-      <Button
-        label={savedIds.has(song.id) ? '저장 취소' : '저장'}
-        variant="ghost"
-        size="sm"
-        icon={savedIds.has(song.id) ? <BookmarkCheck aria-hidden="true" /> : <Bookmark aria-hidden="true" />}
-        isIconOnly
-        tooltip={savedIds.has(song.id) ? '저장 취소' : '저장'}
-        isDisabled={
-          Boolean(pending) ||
-          song.ownerId === userId ||
-          (Boolean(userId) && (savedQuery.isPending || savedQuery.isError))
-        }
-        onClick={() => void save(song.id, savedIds.has(song.id))}
-      />
-      <Button
-        label="복제"
-        variant="ghost"
-        size="sm"
-        icon={<Copy aria-hidden="true" />}
-        isIconOnly
-        tooltip="복제"
-        isDisabled={Boolean(pending)}
-        onClick={() => void duplicate(song.id)}
-      />
-    </HStack>
+    <Button
+      label={savedIds.has(song.id) ? '저장 취소' : '저장'}
+      variant="ghost"
+      size="sm"
+      icon={savedIds.has(song.id) ? <BookmarkCheck aria-hidden="true" /> : <Bookmark aria-hidden="true" />}
+      isIconOnly
+      tooltip={savedIds.has(song.id) ? '저장 취소' : '저장'}
+      isDisabled={
+        Boolean(pending) || song.ownerId === userId || (Boolean(userId) && (savedQuery.isPending || savedQuery.isError))
+      }
+      onClick={() => void save(song.id, savedIds.has(song.id))}
+    />
   );
 
   const openSongFromRow = (event: MouseEvent<Element>, href: string) => {
@@ -131,10 +102,10 @@ const ExploreList = () => {
               key={song.id}
               href={songHref(song.id)}
               onClick={(event) => openSongFromRow(event, songHref(song.id))}
+              className="px-0"
               onAuxClick={(event) => {
                 if (event.button === 1) openSongFromRow(event, songHref(song.id));
               }}
-              className="max-sm:flex-wrap max-sm:[&>span:last-child]:basis-full"
               label={
                 <HStack as="span" gap={2} align="center" className="min-w-0">
                   <Text as="span" type="large" maxLines={1} className="min-w-0">
@@ -188,7 +159,7 @@ const ExploreList = () => {
 const Home = () => (
   <Shell>
     <PageContent>
-      <PageHeader title="탐색" description="전체 공개된 곡을 살펴보고 저장하거나 내 곡으로 복제하세요." />
+      <PageHeader title="탐색" description="전체 공개된 곡을 살펴보고 저장하세요." />
       <QueryBoundary loadingLabel="공개 곡을 불러오는 중…" errorTitle="공개 곡을 불러오지 못했습니다">
         <Suspense fallback={<Spinner label="공개 곡을 불러오는 중…" />}>
           <ExploreList />
