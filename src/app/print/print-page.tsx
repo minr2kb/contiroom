@@ -1,10 +1,10 @@
 'use client';
 
 import { Button } from '@astryxdesign/core/Button';
-import { Link } from '@astryxdesign/core/Link';
 import { Selector } from '@astryxdesign/core/Selector';
 import { useQueries } from '@tanstack/react-query';
-import { Download } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, Download } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { queries } from '@/lib/data-api';
 import type { Conti, ContiItem, LyricLine, Song } from '@/lib/model';
@@ -106,6 +106,7 @@ export function PrintPage({
   itemId?: string;
   displayKey?: string;
 }) {
+  const router = useRouter();
   const [paperColor, setPaperColor] = useState<'white' | 'black'>('white');
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState(false);
@@ -247,19 +248,7 @@ export function PrintPage({
   return (
     <main className="print-page">
       <div className="print-toolbar">
-        <Link
-          href={
-            contiId
-              ? `/contis/${encodeURIComponent(contiId)}`
-              : songId
-                ? `/songs/${encodeURIComponent(songId)}`
-                : '/songs'
-          }
-          color="secondary"
-          isStandalone
-        >
-          ← 상세로
-        </Link>
+        <Button label="뒤로가기" icon={<ArrowLeft aria-hidden="true" />} onClick={() => router.back()} />
         <div className="flex items-center gap-2">
           <span className="text-sm text-neutral-400">배경</span>
           <Selector

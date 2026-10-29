@@ -431,7 +431,7 @@ export const PadUtilityPanel = () => {
         <div
           role="toolbar"
           aria-label="패드 플레이어"
-          className="fixed right-10 bottom-10 z-40 opacity-30 hover:opacity-100 transition-opacity duration-200"
+          className="fixed right-10 bottom-10 z-40 opacity-80 transition-opacity duration-200 sm:opacity-30 [@media(hover:hover)]:hover:opacity-100"
           onMouseEnter={() => {
             if (window.matchMedia('(hover: hover)').matches) setMiniExpanded(true);
           }}
