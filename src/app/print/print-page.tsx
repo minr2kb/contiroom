@@ -11,6 +11,7 @@ import type { Conti, ContiItem, LyricLine, Song } from '@/lib/model';
 import { itemSemitones, keyPitch, transposeChord } from '@/lib/music';
 import { printForm, printLineSegments } from '@/lib/print-score';
 import './print.css';
+import { HStack } from '@astryxdesign/core/HStack';
 
 function PrintLine({
   line,
@@ -248,28 +249,36 @@ export function PrintPage({
   return (
     <main className="print-page">
       <div className="print-toolbar">
-        <Button label="뒤로가기" icon={<ArrowLeft aria-hidden="true" />} onClick={() => router.back()} />
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-neutral-400">배경</span>
-          <Selector
-            label="배경"
-            isLabelHidden
-            options={[
-              { label: '흰색', value: 'white' },
-              { label: '검정', value: 'black' },
-            ]}
-            value={paperColor}
-            onChange={(value) => setPaperColor(value as 'white' | 'black')}
-          />
-        </div>
         <Button
-          label={isDownloading ? 'PDF 만드는 중…' : 'PDF 다운로드'}
-          tooltip={isDownloading ? 'PDF 만드는 중…' : 'PDF 다운로드'}
-          icon={<Download aria-hidden="true" />}
+          label="뒤로가기"
+          icon={<ArrowLeft aria-hidden="true" />}
+          variant="ghost"
+          onClick={() => router.back()}
           isIconOnly
-          onClick={downloadPdf}
-          isDisabled={isDownloading || isPending || isError || invalid || emptyConti || missingSongNumbers.length > 0}
         />
+        <HStack align="center" gap={2}>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-neutral-400">배경</span>
+            <Selector
+              label="배경"
+              isLabelHidden
+              options={[
+                { label: '흰색', value: 'white' },
+                { label: '검정', value: 'black' },
+              ]}
+              value={paperColor}
+              onChange={(value) => setPaperColor(value as 'white' | 'black')}
+            />
+          </div>
+          <Button
+            label={isDownloading ? 'PDF 만드는 중…' : 'PDF 다운로드'}
+            tooltip={isDownloading ? 'PDF 만드는 중…' : 'PDF 다운로드'}
+            icon={<Download aria-hidden="true" />}
+            isIconOnly
+            onClick={downloadPdf}
+            isDisabled={isDownloading || isPending || isError || invalid || emptyConti || missingSongNumbers.length > 0}
+          />
+        </HStack>
       </div>
       {downloadError && (
         <p className="print-status" role="alert">
