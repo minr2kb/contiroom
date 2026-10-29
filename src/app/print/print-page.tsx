@@ -4,7 +4,8 @@ import { Button } from '@astryxdesign/core/Button';
 import { Link } from '@astryxdesign/core/Link';
 import { Selector } from '@astryxdesign/core/Selector';
 import { useQueries } from '@tanstack/react-query';
-import { useState } from 'react';
+import { Download } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { queries } from '@/lib/data-api';
 import type { Conti, ContiItem, LyricLine, Song } from '@/lib/model';
 import { itemSemitones, keyPitch, transposeChord } from '@/lib/music';
@@ -105,8 +106,11 @@ export function PrintPage({
   itemId?: string;
   displayKey?: string;
 }) {
-  const [columns, setColumns] = useState<1 | 2>(2);
   const [paperColor, setPaperColor] = useState<'white' | 'black'>('white');
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState(false);
+  const documentRef = useRef<HTMLDivElement>(null);
+  const downloadingRef = useRef(false);
   const [songsQuery, contisQuery] = useQueries({
     queries: [
       contiId ? queries.listContiSongs({ path: { id: contiId } }) : queries.listSongs(),
@@ -132,6 +136,114 @@ export function PrintPage({
       (Boolean(contiId) && !conti) ||
       (Boolean(itemId || (songId && contiId)) && !singleItem));
 
+  async function downloadPdf() {
+    if (downloadingRef.current || !documentRef.current) return;
+    downloadingRef.current = true;
+    setIsDownloading(true);
+    setDownloadError(false);
+
+    const capture = documentRef.current.cloneNode(true) as HTMLDivElement;
+    capture.style.cssText = 'position: fixed; top: 0; left: -10000px; width: 210mm; padding: 0; pointer-events: none;';
+    document.body.append(capture);
+
+    try {
+      const [{ toCanvas }, { PDFDocument }] = await Promise.all([import('html-to-image'), import('pdf-lib')]);
+      await document.fonts.ready;
+      const pdf = await PDFDocument.create();
+      const pageWidth = 595.28;
+      const pageHeight = 841.89;
+      const cssPageHeight = 297 * (96 / 25.4);
+      const cssMargin = 14 * (96 / 25.4);
+      const background = paperColor === 'black' ? '#111' : '#fff';
+
+      for (const song of capture.querySelectorAll<HTMLElement>('.print-song')) {
+        song.style.zoom = '1';
+        const canvas = await toCanvas(song, { pixelRatio: 2, backgroundColor: background });
+        const scale = canvas.height / song.scrollHeight;
+        const songTop = song.getBoundingClientRect().top;
+        const occupied = [
+          ...song.querySelectorAll<HTMLElement>(
+            '.print-conti-title, .print-song-header, .print-section h3, .print-line-group, .print-empty',
+          ),
+        ].map((element) => {
+          const rect = element.getBoundingClientRect();
+          return { top: rect.top - songTop, bottom: rect.bottom - songTop };
+        });
+        for (const section of song.querySelectorAll<HTMLElement>('.print-section')) {
+          const heading = section.querySelector('h3');
+          const firstLine = section.querySelector('.print-line-group');
+          if (heading && firstLine) {
+            occupied.push({
+              top: heading.getBoundingClientRect().top - songTop,
+              bottom: firstLine.getBoundingClientRect().bottom - songTop,
+            });
+          }
+        }
+        const contentBottom = Math.max(...occupied.map(({ bottom }) => bottom));
+
+        let start = 0;
+        while (start < contentBottom) {
+          const firstPage = start === 0;
+          const limit = Math.min(contentBottom, start + cssPageHeight - (firstPage ? cssMargin : 2 * cssMargin));
+          let end = limit;
+          if (limit < contentBottom) {
+            // Keep each lyric group intact when a long song continues on another A4 page.
+            while (true) {
+              const crossing = occupied.find(({ top, bottom }) => top < end && end < bottom);
+              if (!crossing) break;
+              end = crossing.top;
+            }
+            if (end <= start) throw new Error('A lyric line is taller than one PDF page.');
+          }
+
+          const pageCanvas = document.createElement('canvas');
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = Math.round(cssPageHeight * scale);
+          const context = pageCanvas.getContext('2d');
+          if (!context) throw new Error('Canvas is unavailable.');
+          context.fillStyle = background;
+          context.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          const sourceY = Math.round(start * scale);
+          const sourceHeight = Math.min(canvas.height - sourceY, Math.round((end - start) * scale));
+          context.drawImage(
+            canvas,
+            0,
+            sourceY,
+            canvas.width,
+            sourceHeight,
+            0,
+            firstPage ? 0 : Math.round(cssMargin * scale),
+            canvas.width,
+            sourceHeight,
+          );
+          const image = await pdf.embedPng(pageCanvas.toDataURL('image/png'));
+          pdf.addPage([pageWidth, pageHeight]).drawImage(image, { x: 0, y: 0, width: pageWidth, height: pageHeight });
+          start = end;
+        }
+      }
+
+      const bytes = await pdf.save();
+      const url = URL.createObjectURL(new Blob([Uint8Array.from(bytes)], { type: 'application/pdf' }));
+      const filename =
+        (singleSong?.title || conti?.title || '악보')
+          .replace(/[\\/:*?"<>|]|\p{Cc}/gu, '')
+          .replace(/^\.+|\.+$/g, '')
+          .trim() || '악보';
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${filename}.pdf`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (error) {
+      console.error('PDF 다운로드 실패', error);
+      setDownloadError(true);
+    } finally {
+      capture.remove();
+      downloadingRef.current = false;
+      setIsDownloading(false);
+    }
+  }
+
   return (
     <main className="print-page">
       <div className="print-toolbar">
@@ -148,30 +260,33 @@ export function PrintPage({
         >
           ← 상세로
         </Link>
-        <Selector
-          label="세로 배치"
-          options={[
-            { label: '한 줄', value: '1' },
-            { label: '두 줄', value: '2' },
-          ]}
-          value={String(columns)}
-          onChange={(value) => setColumns(Number(value) as 1 | 2)}
-        />
-        <Selector
-          label="용지 색상"
-          options={[
-            { label: '흰색', value: 'white' },
-            { label: '검정', value: 'black' },
-          ]}
-          value={paperColor}
-          onChange={(value) => setPaperColor(value as 'white' | 'black')}
-        />
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-neutral-400">배경</span>
+          <Selector
+            label="배경"
+            isLabelHidden
+            options={[
+              { label: '흰색', value: 'white' },
+              { label: '검정', value: 'black' },
+            ]}
+            value={paperColor}
+            onChange={(value) => setPaperColor(value as 'white' | 'black')}
+          />
+        </div>
         <Button
-          label="PDF로 저장 / 인쇄"
-          onClick={() => window.print()}
-          isDisabled={isPending || isError || invalid || emptyConti || missingSongNumbers.length > 0}
+          label={isDownloading ? 'PDF 만드는 중…' : 'PDF 다운로드'}
+          tooltip={isDownloading ? 'PDF 만드는 중…' : 'PDF 다운로드'}
+          icon={<Download aria-hidden="true" />}
+          isIconOnly
+          onClick={downloadPdf}
+          isDisabled={isDownloading || isPending || isError || invalid || emptyConti || missingSongNumbers.length > 0}
         />
       </div>
+      {downloadError && (
+        <p className="print-status" role="alert">
+          PDF를 만들지 못했습니다. 다시 시도해 주세요.
+        </p>
+      )}
       {isPending ? (
         <p className="print-status">악보를 불러오는 중…</p>
       ) : isError ? (
@@ -180,23 +295,24 @@ export function PrintPage({
         </p>
       ) : invalid ? (
         <p className="print-status" role="alert">
-          출력할 곡이나 콘티를 찾을 수 없습니다.
+          다운로드할 곡이나 콘티를 찾을 수 없습니다.
         </p>
       ) : (
         <>
           {emptyConti && (
             <p className="print-status print-blocked" role="alert">
-              콘티에 출력할 곡이 없습니다. 곡을 추가한 뒤 다시 시도해 주세요.
+              콘티에 다운로드할 곡이 없습니다. 곡을 추가한 뒤 다시 시도해 주세요.
             </p>
           )}
           {missingSongNumbers.length > 0 && (
             <p className="print-status print-blocked" role="alert">
-              {missingSongNumbers.join(', ')}번째 곡을 사용할 수 없습니다. 누락된 곡이 있어 PDF 출력을 중단했습니다.
+              {missingSongNumbers.join(', ')}번째 곡을 사용할 수 없습니다. 누락된 곡이 있어 PDF 다운로드를 중단했습니다.
             </p>
           )}
           {!emptyConti && (
             <div
-              className={`print-document print-columns-${columns} print-paper-${paperColor}${missingSongNumbers.length ? ' print-document-unavailable' : ''}`}
+              ref={documentRef}
+              className={`print-document print-paper-${paperColor}${missingSongNumbers.length ? ' print-document-unavailable' : ''}`}
             >
               {singleSong ? (
                 <PrintSong song={singleSong} item={singleItem} displayKey={displayKey} />

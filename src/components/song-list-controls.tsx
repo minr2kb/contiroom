@@ -88,7 +88,7 @@ export function SongListControls({ filters, title, onTitleChange, onFilterChange
     Number(Boolean(filters.baseKey)) + Number(filters.minBpm !== undefined) + Number(filters.maxBpm !== undefined);
 
   return (
-    <HStack wrap="wrap" align="end" gap={2} className="w-full px-3">
+    <HStack wrap="wrap" align="end" gap={2} className="w-full">
       <div className="min-w-40 flex-1">
         <TextInput
           label="곡 제목 검색"

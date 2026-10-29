@@ -74,6 +74,7 @@ const ContisList = ({ userId }: { userId: string | null }) => {
             </Text>
           }
           endContent={<ArrowRight aria-hidden="true" className="h-4 w-4 text-neutral-400" />}
+          className="px-0"
         />
       ))}
     </List>

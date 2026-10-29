@@ -154,55 +154,65 @@ export function SongDetailPage({ id, contiId, itemId, returnTo }: Props) {
                   </HStack>
                 )}
 
-                {isOwner && (
-                  <MoreMenu
-                    label="곡 메뉴"
-                    alignment="end"
-                    size="lg"
-                    variant="secondary"
-                    items={[
-                      {
-                        label: song.visibility === 'public' ? '비공개로 전환' : '전체 공개로 전환',
-                        icon:
-                          song.visibility === 'public' ? (
-                            <EyeOff aria-hidden="true" className="h-4 w-4" />
-                          ) : (
-                            <Eye aria-hidden="true" className="h-4 w-4" />
-                          ),
-                        onClick: () => {
-                          if (visibilityMutation.isPending) return;
-                          visibilityMutation.mutate({
-                            body: { ...song, visibility: song.visibility === 'public' ? 'private' : 'public' },
-                          });
-                        },
-                      },
-                      {
-                        label: '다운로드',
-                        icon: <Download aria-hidden="true" className="h-4 w-4" />,
-                        href: `/print?songId=${encodeURIComponent(song.id)}${context.valid ? `&contiId=${encodeURIComponent(context.contiId ?? '')}&itemId=${encodeURIComponent(context.item?.id ?? '')}` : `&key=${encodeURIComponent(preview.key || song.baseKey)}`}`,
-                        target: '_blank',
-                        rel: 'noopener noreferrer',
-                      },
+                <MoreMenu
+                  label="곡 메뉴"
+                  alignment="end"
+                  size="lg"
+                  variant="secondary"
+                  items={[
+                    ...(isOwner
+                      ? [
+                          {
+                            label: song.visibility === 'public' ? '비공개로 전환' : '전체 공개로 전환',
+                            icon:
+                              song.visibility === 'public' ? (
+                                <EyeOff aria-hidden="true" className="h-4 w-4" />
+                              ) : (
+                                <Eye aria-hidden="true" className="h-4 w-4" />
+                              ),
+                            onClick: () => {
+                              if (visibilityMutation.isPending) return;
+                              visibilityMutation.mutate({
+                                body: { ...song, visibility: song.visibility === 'public' ? 'private' : 'public' },
+                              });
+                            },
+                          },
+                        ]
+                      : []),
+                    {
+                      label: '다운로드',
+                      icon: <Download aria-hidden="true" className="h-4 w-4" />,
+                      href: `/print?songId=${encodeURIComponent(song.id)}${context.valid ? `&contiId=${encodeURIComponent(context.contiId ?? '')}&itemId=${encodeURIComponent(context.item?.id ?? '')}` : `&key=${encodeURIComponent(preview.key || song.baseKey)}`}`,
+                      target: '_blank',
+                      rel: 'noopener noreferrer',
+                    },
 
-                      {
-                        label: '복제',
-                        icon: <Copy aria-hidden="true" className="h-4 w-4" />,
-                        onClick: () => void duplicateSong(),
-                      },
-                      {
-                        label: '수정',
-                        href: `/songs/${song.id}/edit`,
-                        icon: <Pencil aria-hidden="true" className="h-4 w-4" />,
-                      },
-                      {
-                        label: '삭제',
-                        icon: <Trash2 aria-hidden="true" className="h-4 w-4" />,
-                        variant: 'destructive',
-                        onClick: () => deletion.setIsDeleteOpen(true),
-                      },
-                    ]}
-                  />
-                )}
+                    ...(userId && (isOwner || song.visibility === 'public')
+                      ? [
+                          {
+                            label: '복제',
+                            icon: <Copy aria-hidden="true" className="h-4 w-4" />,
+                            onClick: () => void duplicateSong(),
+                          },
+                        ]
+                      : []),
+                    ...(isOwner
+                      ? [
+                          {
+                            label: '수정',
+                            href: `/songs/${song.id}/edit`,
+                            icon: <Pencil aria-hidden="true" className="h-4 w-4" />,
+                          },
+                          {
+                            label: '삭제',
+                            icon: <Trash2 aria-hidden="true" className="h-4 w-4" />,
+                            variant: 'destructive' as const,
+                            onClick: () => deletion.setIsDeleteOpen(true),
+                          },
+                        ]
+                      : []),
+                  ]}
+                />
               </>
             )
           }

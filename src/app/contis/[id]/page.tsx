@@ -97,7 +97,7 @@ const ContiItems = ({ contiId }: { contiId: string }) => {
                 : undefined
             }
             startContent={
-              <Text as="span" type="supporting" hasTabularNumbers justify="center" className="w-8">
+              <Text as="span" type="supporting" hasTabularNumbers justify="center" className="w-6">
                 {String(index + 1).padStart(2, '0')}
               </Text>
             }
@@ -139,6 +139,7 @@ const ContiItems = ({ contiId }: { contiId: string }) => {
               ) : undefined
             }
             endContent={song ? <ArrowRight aria-hidden="true" className="h-4 w-4 text-neutral-400" /> : undefined}
+            className="px-0"
           />
         );
       })}

@@ -31,15 +31,10 @@
   background: #fff;
   color: #111;
   box-shadow: 0 3px 18px #0002;
-  break-before: page;
-  print-color-adjust: exact;
 }
 .print-paper-black .print-song {
   background: #111;
   color: #fff;
-}
-.print-song:first-child {
-  break-before: auto;
 }
 .print-conti-title {
   margin: 0 0 6mm;
@@ -64,11 +59,8 @@
   overflow-wrap: anywhere;
 }
 .print-sections {
-  column-count: 1;
-  column-gap: 9mm;
-}
-.print-columns-2 .print-sections {
   column-count: 2;
+  column-gap: 9mm;
 }
 .print-section {
   break-inside: avoid;
@@ -128,52 +120,12 @@
   color: inherit;
 }
 @media screen and (max-width: 800px) {
-  .print-toolbar > a,
-  .print-toolbar > button {
-    width: 100%;
+  .print-toolbar {
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 12px;
   }
   .print-song {
     zoom: calc((100vw - 24px) / 210mm);
-  }
-}
-@page {
-  size: A4;
-  margin: 14mm;
-}
-@media print {
-  html,
-  body {
-    background: white;
-    color: black;
-  }
-  .print-page {
-    min-height: 0;
-    background: white;
-  }
-  .print-toolbar {
-    display: none;
-  }
-  [role="toolbar"][aria-label="패드 플레이어"] {
-    display: none;
-  }
-  .print-document {
-    padding: 0;
-  }
-  .print-song {
-    width: auto;
-    min-height: 0;
-    margin: 0;
-    padding: 0;
-    box-shadow: none;
-  }
-  .print-status {
-    display: none;
-  }
-  .print-blocked {
-    display: block;
-    color: #111;
-  }
-  .print-document-unavailable {
-    display: none;
   }
 }

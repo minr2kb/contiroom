@@ -95,6 +95,7 @@ const SongsList = ({ userId, listQuery }: { userId: string | null; listQuery: Li
               onAuxClick={(event) => {
                 if (event.button === 1) openSongFromRow(event, listQuery.songHref(song.id));
               }}
+              className="px-0"
               label={
                 <HStack as="span" gap={2} align="center">
                   <Text as="span" type="large" maxLines={1}>
@@ -325,6 +326,7 @@ const SongsPage = () => {
           role="tablist"
           aria-label="곡 라이브러리"
           hasDivider
+          className="gap-4"
         >
           <Tab
             id="created-songs-tab"
@@ -333,6 +335,7 @@ const SongsPage = () => {
             icon={<Music2 aria-hidden="true" />}
             panelId="created-songs-panel"
             endContent={<span className="text-neutral-400">{createdCount}</span>}
+            className="px-0"
           />
           <Tab
             id="saved-songs-tab"
@@ -341,6 +344,7 @@ const SongsPage = () => {
             icon={<Bookmark aria-hidden="true" />}
             panelId="saved-songs-panel"
             endContent={<span className="text-neutral-400">{savedCount}</span>}
+            className="px-0"
           />
         </TabList>
         <section
