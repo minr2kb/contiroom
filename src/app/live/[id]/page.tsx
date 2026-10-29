@@ -134,6 +134,7 @@ const LivePage = () => {
           nextLine: display.nextLine,
           showChords: display.active.options.showChords,
           showNextLyrics: display.active.options.showNextLyrics,
+          showTranslations: display.active.options.showTranslations,
         }}
         onRetry={display.retry}
         canMove={!overlays.settings.isOpen && !overlays.hint.isOpen}

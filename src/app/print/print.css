@@ -79,12 +79,22 @@
   font-size: 12pt;
   font-weight: 700;
 }
+.print-line-group {
+  break-inside: avoid;
+  margin: 0 0 2mm;
+}
 .print-line {
   display: flex;
   flex-wrap: wrap;
-  margin: 0 0 2mm;
   font-size: 13pt;
   line-height: 1.2;
+}
+.print-translation {
+  margin: 0.5mm 0 0;
+  font-size: 10pt;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .print-segment {
   display: inline-flex;
@@ -113,8 +123,18 @@
 .print-document .print-song-header p,
 .print-document .print-section h3,
 .print-document .print-line,
+.print-document .print-translation,
 .print-document .print-empty {
   color: inherit;
+}
+@media screen and (max-width: 800px) {
+  .print-toolbar > a,
+  .print-toolbar > button {
+    width: 100%;
+  }
+  .print-song {
+    zoom: calc((100vw - 24px) / 210mm);
+  }
 }
 @page {
   size: A4;

@@ -22,6 +22,7 @@ type SongEditorContentProps = {
   load: { isPending: boolean; isError: boolean; retry: () => void };
   draft?: Song;
   songActions: ReturnType<typeof useSongDraft>['song'];
+  linesActions: ReturnType<typeof useSongDraft>['lines'];
   registerInput: ReturnType<typeof useLyricEditor>['registerInput'];
   onLineCommand: (command: LineEditorCommand) => void;
   onSectionCommand: (command: SectionEditorCommand) => void;
@@ -35,6 +36,7 @@ export const SongEditorContent = ({
   load,
   draft,
   songActions,
+  linesActions,
   registerInput,
   onLineCommand,
   onSectionCommand,
@@ -102,6 +104,8 @@ export const SongEditorContent = ({
               section={section}
               index={index}
               inputRef={registerInput}
+              translationEnabled={draft.translationEnabled ?? false}
+              onTranslationChange={linesActions.rewriteTranslation}
               onLineCommand={onLineCommand}
               onSectionCommand={onSectionCommand}
               activeLineId={activeTarget?.sectionId === section.id ? activeTarget.lineId : undefined}

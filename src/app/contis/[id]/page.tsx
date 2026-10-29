@@ -262,7 +262,7 @@ export default function ContiDetailPage() {
                   ]}
                 />
                 <Button
-                  label="슬라이드 열기"
+                  label="라이브"
                   variant="primary"
                   icon={<Presentation aria-hidden="true" />}
                   href={`/live/${conti.id}`}

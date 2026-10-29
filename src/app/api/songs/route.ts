@@ -15,13 +15,18 @@ export async function GET() {
   if (profilesError) return NextResponse.json({ error: profilesError.message }, { status: 500 });
   const handles = new Map((profiles ?? []).map((profile) => [profile.id, profile.handle]));
   const readableIds = new Set((data ?? []).map((row) => row.id));
-  return NextResponse.json((data ?? []).map((row) => toSong(
-    row,
-    handles.get(row.creator_user_id),
-    row.origin_song_id ? readableIds.has(row.origin_song_id) : undefined,
-  )), {
-    headers: { 'Cache-Control': 'private, no-store' },
-  });
+  return NextResponse.json(
+    (data ?? []).map((row) =>
+      toSong(
+        row,
+        handles.get(row.creator_user_id),
+        row.origin_song_id ? readableIds.has(row.origin_song_id) : undefined,
+      ),
+    ),
+    {
+      headers: { 'Cache-Control': 'private, no-store' },
+    },
+  );
 }
 
 export async function PUT(request: Request) {
@@ -47,12 +52,14 @@ export async function PUT(request: Request) {
     base_key: song.baseKey,
     bpm: song.bpm ?? null,
     sections: song.sections,
+    translation_enabled: song.translationEnabled ?? false,
     artist: song.artist?.trim() || null,
     visibility: song.visibility ?? existing?.visibility ?? 'private',
   };
   const { data, error } = await (existing
     ? supabase.from('songs').update(values).eq('id', song.id)
-    : supabase.from('songs').insert({ id: song.id, ...values }))
+    : supabase.from('songs').insert({ id: song.id, ...values })
+  )
     .select(songColumns)
     .maybeSingle();
   if (error) return NextResponse.json({ error: error.message }, { status: error.code === '42501' ? 403 : 500 });

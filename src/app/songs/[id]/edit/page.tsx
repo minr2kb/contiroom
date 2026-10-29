@@ -28,6 +28,7 @@ import type { LyricLine, Song } from '@/lib/model';
 import { MUSIC_KEYS } from '@/lib/music';
 import { PHOTO_DRAFT_STORAGE_KEY, storedPhotoDraftSchema } from '@/lib/song-photo-draft';
 import { useCurrentUserId } from '@/lib/use-current-user-id';
+import { Switch } from '@astryxdesign/core/Switch';
 
 const focusChordEditor = () => {
   const id = window.matchMedia('(max-width: 1023px)').matches ? 'song-chord-mobile-header' : 'song-chord-panel';
@@ -367,6 +368,13 @@ const SongEditor = () => {
             title={isNewSong ? '새 곡' : '곡 수정'}
             actions={
               <>
+                <Switch
+                  label="번역"
+                  value={draft?.translationEnabled ?? false}
+                  onChange={songActions.setTranslationEnabled}
+                  labelPosition="start"
+                  size="sm"
+                />
                 <Button label="취소" variant="secondary" icon={<X aria-hidden="true" />} onClick={cancel} />
                 <Button
                   label="저장"
@@ -389,6 +397,7 @@ const SongEditor = () => {
             }}
             draft={draft}
             songActions={songActions}
+            linesActions={lines}
             registerInput={registerInput}
             onLineCommand={handleLineCommand}
             onSectionCommand={handleSectionCommand}

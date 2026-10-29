@@ -9,7 +9,15 @@ import { type LiveLine, wrapLiveLine } from '@/lib/live';
 
 type LyricMetrics = { width: number; fontSize: number; fontFamily: string };
 
-export const Lyrics = ({ line, showChords }: { line: LiveLine['line']; showChords: boolean }) => {
+export const Lyrics = ({
+  line,
+  showChords,
+  showTranslations,
+}: {
+  line: LiveLine['line'];
+  showChords: boolean;
+  showTranslations: boolean;
+}) => {
   const container = useRef<HTMLDivElement>(null);
   const [metrics, setMetrics] = useState<LyricMetrics>();
   useLayoutEffect(() => {
@@ -45,8 +53,15 @@ export const Lyrics = ({ line, showChords }: { line: LiveLine['line']; showChord
 
   if (!showChords)
     return (
-      <div className="font-mono whitespace-pre-wrap [overflow-wrap:anywhere] text-[clamp(28px,4vw,112px)] leading-normal font-semibold">
-        {line.text || '　'}
+      <div>
+        <div className="font-mono whitespace-pre-wrap [overflow-wrap:anywhere] text-[clamp(28px,4vw,112px)] leading-normal font-semibold">
+          {line.text || '　'}
+        </div>
+        {showTranslations && line.translation?.trim() && (
+          <div className="-mt-1 whitespace-pre-wrap [overflow-wrap:anywhere] text-[clamp(20px,2.8vw,76px)] leading-normal text-neutral-300">
+            {line.translation}
+          </div>
+        )}
       </div>
     );
   const characters = graphemes(line.text);
@@ -69,43 +84,50 @@ export const Lyrics = ({ line, showChords }: { line: LiveLine['line']; showChord
   }));
   const rows = wrapLiveLine(glyphWidths, chords, metrics?.width ?? Number.POSITIVE_INFINITY);
   return (
-    <VStack
-      ref={container}
-      className="font-mono min-w-0 overflow-visible text-[clamp(28px,4vw,112px)] leading-normal font-semibold"
-      role="img"
-      aria-label={`${line.chords.map((x) => x.value).join(', ')} ${line.text}`}
-    >
-      {rows.map((row) => (
-        <HStack
-          key={row.start}
-          className="relative w-max max-w-none whitespace-pre"
-          style={{ paddingTop: row.lanes ? row.lanes * chordHeight + 4 : 0 }}
-        >
-          {row.chords.map((chord) => (
-            <span
-              key={chord.id}
-              className="absolute top-0 whitespace-nowrap font-extrabold"
-              style={{
-                left: chord.x,
-                top: chord.lane * chordHeight,
-                fontSize: chordSize,
-                lineHeight: `${chordHeight}px`,
-              }}
-            >
-              {chord.value}
-            </span>
-          ))}
-          {slots.slice(row.start, row.end).map((glyph, index) => (
-            <span
-              key={row.start + index}
-              className="inline-block shrink-0"
-              style={{ width: glyphWidths[row.start + index] }}
-            >
-              {glyph}
-            </span>
-          ))}
-        </HStack>
-      ))}
-    </VStack>
+    <div>
+      <VStack
+        ref={container}
+        className="font-mono min-w-0 overflow-visible text-[clamp(28px,4vw,112px)] leading-normal font-semibold"
+        role="img"
+        aria-label={`${line.chords.map((x) => x.value).join(', ')} ${line.text}`}
+      >
+        {rows.map((row) => (
+          <HStack
+            key={row.start}
+            className="relative w-max max-w-none whitespace-pre"
+            style={{ paddingTop: row.lanes ? row.lanes * chordHeight + 4 : 0 }}
+          >
+            {row.chords.map((chord) => (
+              <span
+                key={chord.id}
+                className="absolute top-0 whitespace-nowrap font-extrabold"
+                style={{
+                  left: chord.x,
+                  top: chord.lane * chordHeight,
+                  fontSize: chordSize,
+                  lineHeight: `${chordHeight}px`,
+                }}
+              >
+                {chord.value}
+              </span>
+            ))}
+            {slots.slice(row.start, row.end).map((glyph, index) => (
+              <span
+                key={row.start + index}
+                className="inline-block shrink-0"
+                style={{ width: glyphWidths[row.start + index] }}
+              >
+                {glyph}
+              </span>
+            ))}
+          </HStack>
+        ))}
+      </VStack>
+      {showTranslations && line.translation?.trim() && (
+        <div className="-mt-1 whitespace-pre-wrap [overflow-wrap:anywhere] text-[clamp(20px,2.8vw,76px)] leading-normal text-neutral-300">
+          {line.translation}
+        </div>
+      )}
+    </div>
   );
 };

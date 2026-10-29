@@ -1,28 +1,35 @@
-import { contiSchema, songSchema } from './data-router';
+import { contiSchema, songSchema } from './data-router.ts';
 
-export const songColumns = 'id,title,base_key,bpm,sections,visibility,owner_id,creator_user_id,artist,created_at,origin_song_id';
+export const songColumns =
+  'id,title,base_key,bpm,sections,translation_enabled,visibility,owner_id,creator_user_id,artist,created_at,origin_song_id';
 export const contiColumns =
   'id,title,scheduled_date,youtube_playlist_url,items,visibility,owner_id,creator_user_id,created_at';
 
-export const toSong = (row: {
-  id: string;
-  title: string;
-  base_key: string;
-  bpm: number | null;
-  sections: unknown;
-  visibility: string;
-  owner_id: string;
-  creator_user_id: string;
-  artist: string | null;
-  created_at: string;
-  origin_song_id: string | null;
-}, creatorHandle?: string, originAvailable?: boolean) =>
+export const toSong = (
+  row: {
+    id: string;
+    title: string;
+    base_key: string;
+    bpm: number | null;
+    sections: unknown;
+    translation_enabled: boolean;
+    visibility: string;
+    owner_id: string;
+    creator_user_id: string;
+    artist: string | null;
+    created_at: string;
+    origin_song_id: string | null;
+  },
+  creatorHandle?: string,
+  originAvailable?: boolean,
+) =>
   songSchema.parse({
     id: row.id,
     title: row.title,
     baseKey: row.base_key,
     ...(row.bpm === null ? {} : { bpm: row.bpm }),
     sections: row.sections,
+    translationEnabled: row.translation_enabled,
     visibility: row.visibility,
     ownerId: row.owner_id,
     creatorId: row.creator_user_id,

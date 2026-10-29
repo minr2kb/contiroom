@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { isYouTubePlaylistUrl } from './youtube-playlist.ts';
 
 const chord = z.object({ id: z.string(), offset: z.number().int().nonnegative(), value: z.string().min(1) });
-const line = z.object({ id: z.string(), text: z.string(), chords: z.array(chord) });
+const line = z.object({ id: z.string(), text: z.string(), translation: z.string().optional(), chords: z.array(chord) });
 const section = z.object({ id: z.string(), name: z.string().min(1), lines: z.array(line) });
 const visibility = z.enum(['private', 'public']);
 
@@ -11,6 +11,7 @@ export const songSchema = z.object({
   id: z.string(),
   title: z.string().min(1),
   baseKey: z.string().min(1),
+  translationEnabled: z.boolean().optional(),
   bpm: z.number().positive().optional(),
   sections: z.array(section),
   visibility: visibility.optional(),

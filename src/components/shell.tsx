@@ -106,18 +106,19 @@ export const Shell = ({ children }: { children: React.ReactNode }) => {
               <TopNavItem label="탐색" href="/" isSelected={exploreActive}>
                 <span className={`inline-flex items-center gap-1.5 ${exploreActive ? selectedLabelClass : ''}`}>
                   <Compass aria-hidden="true" className="h-4 w-4" />
-                  탐색
+                  <span className="hidden sm:inline">탐색</span>
                 </span>
               </TopNavItem>
               <TopNavItem label="곡 라이브러리" href="/songs" isSelected={songsActive}>
                 <span className={`inline-flex items-center gap-1.5 ${songsActive ? selectedLabelClass : ''}`}>
-                  <Library aria-hidden="true" className="h-4 w-4" />곡 라이브러리
+                  <Library aria-hidden="true" className="h-4 w-4" />
+                  <span className="hidden sm:inline">곡 라이브러리</span>
                 </span>
               </TopNavItem>
               <TopNavItem label="콘티" href="/contis" isSelected={contisActive}>
                 <span className={`inline-flex items-center gap-1.5 ${contisActive ? selectedLabelClass : ''}`}>
                   <ListMusic aria-hidden="true" className="h-4 w-4" />
-                  콘티
+                  <span className="hidden sm:inline">콘티</span>
                 </span>
               </TopNavItem>
             </>

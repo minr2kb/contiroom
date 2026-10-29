@@ -3,6 +3,14 @@ import test from 'node:test';
 import { isDisplayOptions, wrapLiveLine } from './live.ts';
 
 assert.equal(isDisplayOptions({ count: 3, showChords: true, showForm: false, showNextLyrics: true }), true);
+assert.equal(
+  isDisplayOptions({ count: 3, showChords: true, showForm: false, showNextLyrics: true, showTranslations: false }),
+  true,
+);
+assert.equal(
+  isDisplayOptions({ count: 3, showChords: true, showForm: false, showNextLyrics: true, showTranslations: 'false' }),
+  false,
+);
 assert.equal(isDisplayOptions({ count: 4, showChords: true, showForm: false, showNextLyrics: true }), false);
 
 test('live lyrics wrap graphemes at the available width without losing spaces', () => {

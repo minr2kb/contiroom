@@ -17,6 +17,8 @@ type Props = {
   sectionName: string;
   lineIndex: number;
   inputRef: (lineId: string, element: HTMLTextAreaElement | null) => void;
+  translationEnabled: boolean;
+  onTranslationChange: (sectionId: string, lineId: string, text: string) => void;
   onCommand: (command: LineEditorCommand) => void;
   activeChordId?: string;
   activeSlotOffset?: number;
@@ -29,6 +31,8 @@ export const LyricLineEditor = ({
   sectionName,
   lineIndex,
   inputRef,
+  translationEnabled,
+  onTranslationChange,
   onCommand,
   activeChordId,
   activeSlotOffset,
@@ -75,7 +79,11 @@ export const LyricLineEditor = ({
         }
       }}
     >
-      <HStack align="center" gap={0} className="absolute right-full bottom-4 shrink-0">
+      <HStack
+        align="center"
+        gap={0}
+        className={`absolute right-full ${translationEnabled ? 'bottom-12' : 'bottom-4'} shrink-0`}
+      >
         <IconButton
           label={`${sectionName} ${lineIndex + 1}번째 줄 뒤에 추가`}
           tooltip="이 줄 아래에 추가"
@@ -159,13 +167,23 @@ export const LyricLineEditor = ({
             />
           </div>
         </div>
+        {translationEnabled && (
+          <input
+            type="text"
+            className="mt-1 block h-7 w-full min-w-0 border-b border-transparent bg-transparent p-0 font-mono text-sm leading-normal text-neutral-300 outline-none transition-colors placeholder:text-neutral-600 group-hover:border-neutral-600 focus:border-neutral-300"
+            aria-label={`${sectionName} ${lineIndex + 1}번째 줄 번역 가사`}
+            placeholder="번역 가사를 입력하세요"
+            value={line.translation ?? ''}
+            onChange={(event) => onTranslationChange(sectionId, line.id, event.target.value)}
+          />
+        )}
       </div>
       <HStack
         align="center"
         gap={0.5}
         role="toolbar"
         aria-label={`${sectionName} ${lineIndex + 1}번째 줄 도구`}
-        className="mt-7 hidden shrink-0 opacity-100 transition [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:opacity-100 lg:flex"
+        className={`mt-7 hidden shrink-0 opacity-100 transition [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:opacity-100 lg:flex ${translationEnabled ? 'mb-8' : 'mb-0'}`}
       >
         <IconButton
           label={`${sectionName} ${lineIndex + 1}번째 줄 복제`}
@@ -278,7 +296,7 @@ const DraggableChord = ({
       <button
         ref={ref}
         type="button"
-        className={`font-mono cursor-grab whitespace-nowrap rounded-md border px-[7px] py-[3px] text-sm leading-5 text-white focus-visible:outline-2 focus-visible:outline-neutral-200 ${isSelected ? 'border-neutral-300 bg-neutral-800' : 'border-neutral-600 bg-neutral-900 hover:border-neutral-300 hover:bg-neutral-800'} ${isDragging ? 'scale-105 border-neutral-300 opacity-60 shadow-lg' : ''}`}
+        className={`font-mono cursor-grab whitespace-nowrap rounded-md border px-[6px] py-[2px] text-xs leading-5 text-white focus-visible:outline-2 focus-visible:outline-neutral-200 ${isSelected ? 'border-neutral-300 bg-neutral-800' : 'border-neutral-600 bg-neutral-900 hover:border-neutral-300 hover:bg-neutral-800'} ${isDragging ? 'scale-105 border-neutral-300 opacity-60 shadow-lg' : ''}`}
         onClick={(event) =>
           onCommand({ type: 'open-chord', element: event.currentTarget, sectionId, lineId, offset, chordId: chord.id })
         }

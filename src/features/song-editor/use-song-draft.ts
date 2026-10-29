@@ -25,6 +25,7 @@ export const useSongDraft = () => {
       setVisibility: (value: 'private' | 'public') => dispatch({ type: 'song/set-visibility', value }),
       setKey: (value: string) => dispatch({ type: 'song/set-key', value }),
       setBpm: (value: number | undefined) => dispatch({ type: 'song/set-bpm', value }),
+      setTranslationEnabled: (value: boolean) => dispatch({ type: 'song/set-translation-enabled', value }),
     };
     const sections = {
       add: () => {
@@ -76,6 +77,8 @@ export const useSongDraft = () => {
       },
       rewrite: (sectionId: string, lineId: string, text: string) =>
         dispatch({ type: 'line/rewrite', sectionId, lineId, text }),
+      rewriteTranslation: (sectionId: string, lineId: string, text: string) =>
+        dispatch({ type: 'line/rewrite-translation', sectionId, lineId, text }),
       splice: (sectionId: string, index: number, deleteCount: number, inserted: LyricLine[]) =>
         dispatch({ type: 'line/splice', sectionId, index, deleteCount, lines: inserted }),
     };

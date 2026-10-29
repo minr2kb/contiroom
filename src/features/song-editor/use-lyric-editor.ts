@@ -70,7 +70,13 @@ export const useLyricEditor = (song: Song | undefined, lines: ReturnType<typeof 
       const merged = mergeLyricLines(previous, line);
       nextCaret.current = { lineId: previous.id, offset: merged.caret };
       lines.splice(sectionId, lineIndex - 1, 2, [merged.line]);
-    } else if (event.key === 'Delete' && !line.text && !line.chords.length && section.lines.length > 1) {
+    } else if (
+      event.key === 'Delete' &&
+      !line.text &&
+      !line.translation &&
+      !line.chords.length &&
+      section.lines.length > 1
+    ) {
       event.preventDefault();
       const next = section.lines[lineIndex + 1];
       const previous = section.lines[lineIndex - 1];

@@ -18,7 +18,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   const { id } = await params;
   const { data: source, error: lookupError } = await supabase
     .from('songs')
-    .select('id,title,base_key,bpm,sections,artist,visibility')
+    .select('id,title,base_key,bpm,sections,translation_enabled,artist,visibility')
     .eq('id', id)
     .maybeSingle();
   if (lookupError) return NextResponse.json({ error: lookupError.message }, { status: 500 });
@@ -37,6 +37,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       base_key: source.base_key,
       bpm: source.bpm,
       sections: source.sections,
+      translation_enabled: source.translation_enabled,
       artist: source.artist,
       visibility: 'private',
     })

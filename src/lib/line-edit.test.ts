@@ -82,3 +82,29 @@ test('multiline paste creates separate lines and keeps suffix chord position', (
     [[['G', 0]], [], [['C', 1]]],
   );
 });
+
+test('splitting lyrics keeps an unsplittable translation with the original line', () => {
+  const original: LyricLine = { id: 'a', text: '주님 예배', translation: 'Worship the Lord', chords: [] };
+  const [first, second] = splitLyricLine(original, 3, 3, 'b');
+  assert.equal(first.translation, 'Worship the Lord');
+  assert.equal(second.translation, undefined);
+  assert.deepEqual(
+    splitMultilineLyric(original, '주님\n 예배', ['b']).map((line) => line.translation),
+    ['Worship the Lord', undefined],
+  );
+  assert.deepEqual(
+    splitLyricLine(original, 0, 0, 'b').map((line) => line.translation),
+    [undefined, 'Worship the Lord'],
+  );
+  assert.deepEqual(
+    splitMultilineLyric(original, '\n주님 예배', ['b']).map((line) => line.translation),
+    [undefined, 'Worship the Lord'],
+  );
+});
+
+test('merging lyrics preserves translations from both lines', () => {
+  const previous: LyricLine = { id: 'a', text: '주님', translation: 'Lord', chords: [] };
+  const current: LyricLine = { id: 'b', text: ' 예배', translation: 'we worship', chords: [] };
+  assert.equal(mergeLyricLines(previous, current).line.translation, 'Lord we worship');
+  assert.equal(mergeLyricLines({ ...previous, translation: undefined }, current).line.translation, 'we worship');
+});

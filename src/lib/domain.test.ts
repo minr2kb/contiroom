@@ -47,6 +47,16 @@ test('independent arrangements, transpose, and live navigation', () => {
   assert.equal(moveCursor(lines, lines.length - 1, 1), lines.length - 1);
 });
 
+test('live lyrics show translations only when enabled for their song', () => {
+  const conti = structuredClone(sampleContis[0]);
+  const song = structuredClone(sampleSongs[0]);
+  song.sections[0].lines[0].translation = 'First translated line';
+  assert.equal(flattenConti(conti, [song])[0].line.translation, undefined);
+  song.translationEnabled = true;
+  assert.equal(flattenConti(conti, [song])[0].line.translation, 'First translated line');
+  assert.equal(song.sections[0].lines[0].translation, 'First translated line');
+});
+
 test('conti schema accepts legacy data without a date and rejects invalid dates', () => {
   const legacy = { id: 'legacy', title: '기존 콘티', items: [] };
   assert.deepEqual(contiSchema.parse(legacy), legacy);

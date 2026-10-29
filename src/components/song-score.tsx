@@ -10,10 +10,12 @@ const ScoreLine = ({
   line,
   transposeBy,
   preferFlats,
+  showTranslation,
 }: {
   line: LyricLine;
   transposeBy: number;
   preferFlats?: boolean;
+  showTranslation: boolean;
 }) => {
   const characters = graphemes(line.text);
   const lastChord = Math.max(-1, ...line.chords.map((chord) => chord.offset));
@@ -47,6 +49,11 @@ const ScoreLine = ({
           </span>
         ))}
       </HStack>
+      {showTranslation && line.translation?.trim() && (
+        <p className="mt-1 whitespace-pre-wrap text-base leading-relaxed text-neutral-300 [overflow-wrap:anywhere] min-[480px]:text-lg">
+          {line.translation}
+        </p>
+      )}
     </div>
   );
 };
@@ -82,7 +89,13 @@ export const SongScore = ({ song, sectionOrder, transposeBy = 0, preferFlats }: 
           </Heading>
           <VStack gap={2} className="min-w-0">
             {section.lines.map((line) => (
-              <ScoreLine key={line.id} line={line} transposeBy={transposeBy} preferFlats={preferFlats} />
+              <ScoreLine
+                key={line.id}
+                line={line}
+                transposeBy={transposeBy}
+                preferFlats={preferFlats}
+                showTranslation={Boolean(song.translationEnabled)}
+              />
             ))}
           </VStack>
         </section>

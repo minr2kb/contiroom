@@ -13,6 +13,8 @@ type Props = {
   section: Section;
   index: number;
   inputRef: (lineId: string, element: HTMLTextAreaElement | null) => void;
+  translationEnabled: boolean;
+  onTranslationChange: (sectionId: string, lineId: string, text: string) => void;
   onLineCommand: (command: LineEditorCommand) => void;
   onSectionCommand: (command: SectionEditorCommand) => void;
   activeLineId?: string;
@@ -25,6 +27,8 @@ export const SongSectionEditor = ({
   section,
   index,
   inputRef,
+  translationEnabled,
+  onTranslationChange,
   onLineCommand,
   onSectionCommand,
   activeLineId,
@@ -108,6 +112,8 @@ export const SongSectionEditor = ({
             sectionName={section.name}
             lineIndex={lineIndex}
             inputRef={inputRef}
+            translationEnabled={translationEnabled}
+            onTranslationChange={onTranslationChange}
             onCommand={onLineCommand}
             activeChordId={activeChordId}
             activeSlotOffset={activeLineId === line.id ? activeSlotOffset : undefined}

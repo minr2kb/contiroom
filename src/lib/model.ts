@@ -1,5 +1,5 @@
 export type Chord = { id: string; offset: number; value: string };
-export type LyricLine = { id: string; text: string; chords: Chord[] };
+export type LyricLine = { id: string; text: string; translation?: string; chords: Chord[] };
 export type Section = { id: string; name: string; lines: LyricLine[] };
 export type Song = {
   id: string;
@@ -13,6 +13,7 @@ export type Song = {
   visibility?: 'private' | 'public';
   title: string;
   baseKey: string;
+  translationEnabled?: boolean;
   bpm?: number;
   sections: Section[];
 };

@@ -3,7 +3,7 @@ import type { DisplayOptions } from '@/components/live-options-dialog';
 import type { Conti, LyricLine, Song } from './model.ts';
 import { itemSemitones, transposeChord } from './music.ts';
 
-export const isDisplayOptions = (value: unknown): value is DisplayOptions =>
+export const isDisplayOptions = (value: unknown): value is DisplayOptions | Omit<DisplayOptions, 'showTranslations'> =>
   typeof value === 'object' &&
   value !== null &&
   'count' in value &&
@@ -13,7 +13,8 @@ export const isDisplayOptions = (value: unknown): value is DisplayOptions =>
   'showForm' in value &&
   typeof value.showForm === 'boolean' &&
   'showNextLyrics' in value &&
-  typeof value.showNextLyrics === 'boolean';
+  typeof value.showNextLyrics === 'boolean' &&
+  (!('showTranslations' in value) || typeof value.showTranslations === 'boolean');
 
 export type LiveLine = {
   itemId: string;
@@ -42,6 +43,7 @@ export const flattenConti = (conti: Conti, songs: Song[]): LiveLine[] => {
         bpm: item.bpm ?? song.bpm,
         line: {
           ...line,
+          translation: song.translationEnabled ? line.translation : undefined,
           chords: line.chords.map((chord) => ({
             ...chord,
             value: transposeChord(chord.value, shift, (item.key ?? song.baseKey).includes('b')),

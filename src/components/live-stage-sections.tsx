@@ -19,6 +19,7 @@ type LyricsView = {
   nextLine: Display['nextLine'];
   showChords: boolean;
   showNextLyrics: boolean;
+  showTranslations: boolean;
 };
 
 type BodyProps = {
@@ -54,6 +55,7 @@ const LiveStageView = ({ view, lyrics, onRetry }: Pick<BodyProps, 'view' | 'lyri
                 key={`${entry.formId}-${entry.line.id}-${index}`}
                 line={entry.line}
                 showChords={lyrics.showChords}
+                showTranslations={lyrics.showTranslations}
               />
             ))}
           </VStack>
@@ -63,6 +65,11 @@ const LiveStageView = ({ view, lyrics, onRetry }: Pick<BodyProps, 'view' | 'lyri
               <Text color="inherit" className="mt-2 text-[clamp(20px,2.4vw,64px)]">
                 {lyrics.nextLine.line.text}
               </Text>
+              {lyrics.showTranslations && lyrics.nextLine.line.translation?.trim() && (
+                <Text color="inherit" className="text-[clamp(16px,1.8vw,44px)]">
+                  {lyrics.nextLine.line.translation}
+                </Text>
+              )}
             </VStack>
           )}
         </>

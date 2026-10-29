@@ -6,7 +6,13 @@ import { flattenConti, isDisplayOptions, moveCursor, movePageCursor, moveSongCur
 import { getPauseImage, setPauseImage } from '@/lib/live-pause-image';
 import { useLiveOverlays } from './use-live-overlays';
 
-const DEFAULT_OPTIONS: DisplayOptions = { count: 2, showChords: false, showForm: true, showNextLyrics: false };
+const DEFAULT_OPTIONS: DisplayOptions = {
+  count: 2,
+  showChords: false,
+  showForm: true,
+  showNextLyrics: false,
+  showTranslations: true,
+};
 const OPTIONS_STORAGE_KEY = 'contiroom:live-display-options';
 
 export const useLiveStage = (contiId: string) => {
@@ -38,7 +44,7 @@ export const useLiveStage = (contiId: string) => {
       const stored = localStorage.getItem(OPTIONS_STORAGE_KEY);
       if (stored) {
         const parsed: unknown = JSON.parse(stored);
-        if (isDisplayOptions(parsed)) setOptions(parsed);
+        if (isDisplayOptions(parsed)) setOptions({ ...DEFAULT_OPTIONS, ...parsed });
       }
     } catch {
       // Ignore unavailable storage and malformed JSON.

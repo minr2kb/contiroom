@@ -11,6 +11,7 @@ export type DisplayOptions = {
   showChords: boolean;
   showForm: boolean;
   showNextLyrics: boolean;
+  showTranslations: boolean;
 };
 
 export type LiveOptionsDialogProps = {
@@ -65,6 +66,14 @@ export const LiveOptionsDialog = ({
         label="다음 가사 표시"
         value={options.showNextLyrics}
         onChange={(value) => onChange({ showNextLyrics: value })}
+        labelPosition="start"
+        labelSpacing="spread"
+        width="100%"
+      />
+      <Switch
+        label="번역 가사 표시"
+        value={options.showTranslations}
+        onChange={(value) => onChange({ showTranslations: value })}
         labelPosition="start"
         labelSpacing="spread"
         width="100%"

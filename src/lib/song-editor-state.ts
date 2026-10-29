@@ -12,6 +12,7 @@ export type SongEditorAction =
   | { type: 'song/set-artist'; value: string }
   | { type: 'song/set-visibility'; value: 'private' | 'public' }
   | { type: 'song/set-bpm'; value: number | undefined }
+  | { type: 'song/set-translation-enabled'; value: boolean }
   | { type: 'section/add'; section: Section }
   | { type: 'section/duplicate'; sectionId: string; newSectionId: string }
   | { type: 'section/reorder'; sectionId: string; toIndex: number }
@@ -30,6 +31,7 @@ export type SongEditorAction =
       emptyLine: LyricLine;
     }
   | { type: 'line/rewrite'; sectionId: string; lineId: string; text: string }
+  | { type: 'line/rewrite-translation'; sectionId: string; lineId: string; text: string }
   | { type: 'line/splice'; sectionId: string; index: number; deleteCount: number; lines: LyricLine[] }
   | {
       type: 'chord/place';
@@ -119,6 +121,8 @@ export const songEditorReducer = (state: SongEditorState, action: SongEditorActi
       return { ...state, song: { ...song, baseKey: action.value } };
     case 'song/set-bpm':
       return { ...state, song: { ...song, bpm: action.value } };
+    case 'song/set-translation-enabled':
+      return { ...state, song: { ...song, translationEnabled: action.value } };
     case 'section/add':
       return { ...state, song: { ...song, sections: [...song.sections, action.section] } };
     case 'section/duplicate': {
@@ -238,6 +242,14 @@ export const songEditorReducer = (state: SongEditorState, action: SongEditorActi
       return {
         ...state,
         song: updateLine(song, action.sectionId, action.lineId, (line) => rewriteLyricLine(line, action.text)),
+      };
+    case 'line/rewrite-translation':
+      return {
+        ...state,
+        song: updateLine(song, action.sectionId, action.lineId, (line) => ({
+          ...line,
+          translation: action.text || undefined,
+        })),
       };
     case 'line/splice':
       return {

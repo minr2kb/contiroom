@@ -11,19 +11,32 @@ import { itemSemitones, keyPitch, transposeChord } from '@/lib/music';
 import { printForm, printLineSegments } from '@/lib/print-score';
 import './print.css';
 
-function PrintLine({ line, semitones, preferFlats }: { line: LyricLine; semitones: number; preferFlats: boolean }) {
+function PrintLine({
+  line,
+  semitones,
+  preferFlats,
+  showTranslation,
+}: {
+  line: LyricLine;
+  semitones: number;
+  preferFlats: boolean;
+  showTranslation: boolean;
+}) {
   return (
-    <div className="print-line">
-      {printLineSegments(line).map(({ offset, chords, text }) => (
-        <span className="print-segment" key={offset}>
-          <span className="print-chord">
-            {chords
-              .map((chord) => (semitones ? transposeChord(chord.value, semitones, preferFlats) : chord.value))
-              .join(' / ')}
+    <div className="print-line-group">
+      <div className="print-line">
+        {printLineSegments(line).map(({ offset, chords, text }) => (
+          <span className="print-segment" key={offset}>
+            <span className="print-chord">
+              {chords
+                .map((chord) => (semitones ? transposeChord(chord.value, semitones, preferFlats) : chord.value))
+                .join(' / ')}
+            </span>
+            <span className="print-lyric">{text}</span>
           </span>
-          <span className="print-lyric">{text}</span>
-        </span>
-      ))}
+        ))}
+      </div>
+      {showTranslation && line.translation?.trim() && <p className="print-translation">{line.translation}</p>}
     </div>
   );
 }
@@ -63,7 +76,13 @@ function PrintSong({
             <section className="print-section" key={`${section.id}-${sectionIndex}`}>
               <h3>{section.name}</h3>
               {section.lines.map((line) => (
-                <PrintLine key={line.id} line={line} semitones={semitones} preferFlats={key.includes('b')} />
+                <PrintLine
+                  key={line.id}
+                  line={line}
+                  semitones={semitones}
+                  preferFlats={key.includes('b')}
+                  showTranslation={Boolean(song.translationEnabled)}
+                />
               ))}
             </section>
           ))

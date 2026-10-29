@@ -18,11 +18,18 @@ export const splitLyricLine = (
   const secondText = line.text.slice(end);
   const firstLength = graphemeCount(firstText);
   const removedEnd = graphemeCount(line.text.slice(0, end));
+  const moveTranslation = !firstText && Boolean(secondText);
   return [
-    { ...line, text: firstText, chords: line.chords.filter((chord) => chord.offset < firstLength) },
+    {
+      ...line,
+      text: firstText,
+      ...(moveTranslation ? { translation: undefined } : {}),
+      chords: line.chords.filter((chord) => chord.offset < firstLength),
+    },
     {
       id: newLineId,
       text: secondText,
+      ...(moveTranslation && line.translation !== undefined ? { translation: line.translation } : {}),
       chords: line.chords
         .filter((chord) => chord.offset >= removedEnd)
         .map((chord) => ({ ...chord, offset: chord.offset - removedEnd })),
@@ -59,9 +66,13 @@ export const splitMultilineLyric = (line: LyricLine, text: string, newLineIds: s
   const parts = text.replace(/\r\n?/g, '\n').split('\n');
   if (newLineIds.length !== parts.length - 1) throw new Error('Expected one ID for each new line');
   const rewritten = rewriteLyricLine(line, parts.join(''));
+  const translationIndex = parts.findIndex(Boolean);
   const result: LyricLine[] = parts.map((part, index) => ({
     id: index === 0 ? line.id : newLineIds[index - 1],
     text: part,
+    ...(index === Math.max(0, translationIndex) && line.translation !== undefined
+      ? { translation: line.translation }
+      : {}),
     chords: [],
   }));
   for (const chord of rewritten.chords) {
@@ -86,6 +97,9 @@ export const mergeLyricLines = (previous: LyricLine, current: LyricLine): { line
     line: {
       ...previous,
       text: previous.text + current.text,
+      ...(previous.translation !== undefined || current.translation !== undefined
+        ? { translation: [previous.translation, current.translation].filter(Boolean).join(' ') }
+        : {}),
       chords: sortBy(
         [...previous.chords, ...current.chords.map((chord) => ({ ...chord, offset: chord.offset + shift }))],
         ['offset'],
